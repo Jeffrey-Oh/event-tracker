@@ -6,7 +6,8 @@ plugins {
 
 dependencies {
     implementation(project(":event-core"))
+    implementation(project(":event-port"))
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("io.projectreactor:reactor-core")
 }
