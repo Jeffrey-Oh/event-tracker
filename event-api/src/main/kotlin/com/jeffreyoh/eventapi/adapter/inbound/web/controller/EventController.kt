@@ -3,6 +3,7 @@ package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 import com.jeffreyoh.eventapi.adapter.inbound.web.dto.SaveEventRequest
 import com.jeffreyoh.eventapi.adapter.inbound.web.handler.EventHandler
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,7 +22,7 @@ class EventController(
 
     @PostMapping
     fun receiveEvent(
-        @RequestBody request: SaveEventRequest
+        @RequestBody @Valid request: SaveEventRequest
     ): Mono<ResponseEntity<Void>> {
         log.debug { "Received API request: $request" }
         return eventHandler.saveEvent(request)
