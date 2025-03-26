@@ -25,7 +25,7 @@ class RedisEventWriter(
         val value = event.toJson()
 
         return redisTemplate.opsForValue()
-            .set(key, value)
+            .set(key, value, Duration.ofSeconds(10))
             .then()
             .log()
     }

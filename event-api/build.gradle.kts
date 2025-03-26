@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":event-application"))
     implementation(project(":event-storage"))
 
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0")
