@@ -16,7 +16,8 @@ class SaveEventService(
 
     override fun saveEvent(command: EventCommand.SaveEventCommand): Mono<Void> {
         log.debug { "UseCase handle called: $command" }
-        return saveEventPort.saveToRedis(command)
+        val event = command.toEvent()
+        return saveEventPort.saveToRedis(event)
     }
 
 }
