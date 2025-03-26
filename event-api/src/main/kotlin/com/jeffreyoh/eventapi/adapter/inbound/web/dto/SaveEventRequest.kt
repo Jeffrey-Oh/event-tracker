@@ -7,12 +7,14 @@ import com.jeffreyoh.eventcore.domain.event.EventType
 data class SaveEventRequest(
     val eventType: EventType,
     val userId: Long?,
+    val sessionId: String,
     val metadata: EventMetadata,
 ) {
     fun toCommand(): EventCommand.SaveEventCommand {
         return EventCommand.SaveEventCommand(
             eventType,
             userId,
+            sessionId,
             metadata
         )
     }
