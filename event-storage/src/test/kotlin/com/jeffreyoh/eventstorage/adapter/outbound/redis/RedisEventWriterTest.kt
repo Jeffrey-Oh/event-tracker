@@ -4,7 +4,6 @@ import com.jeffreyoh.eventcore.domain.event.Event
 import com.jeffreyoh.eventcore.domain.event.EventMetadata
 import com.jeffreyoh.eventcore.domain.event.EventType
 import com.jeffreyoh.eventcore.domain.event.toJson
-import io.lettuce.core.RestoreArgs.Builder.ttl
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -14,25 +13,22 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.data.redis.core.ReactiveValueOperations
-import org.springframework.data.redis.core.ValueOperations
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @ExtendWith(MockKExtension::class)
 class RedisEventWriterTest {
 
     @MockK private lateinit var redisTemplate: ReactiveStringRedisTemplate
-    private lateinit var redisEventWriter: RedisEventWriter
+    private lateinit var saveEventRedisAdapter: SaveEventRedisAdapter
 
     @BeforeEach
     fun setUp() {
-        redisEventWriter = RedisEventWriter(redisTemplate)
+        saveEventRedisAdapter = SaveEventRedisAdapter(redisTemplate)
     }
 
     @Test
@@ -62,15 +58,15 @@ class RedisEventWriterTest {
         } returns Mono.empty()
 
         // when
-        val result = redisEventWriter.saveToRedis(event)
+        val result = saveEventRedisAdapter.saveToRedis(event)
 
         // then
         StepVerifier.create(result)
             .verifyComplete()
 
-        val expectedKey = "events:${event.eventType.name}:user:${event.userId}:${event.createdAt.toEpochSecond(ZoneOffset.UTC)}"
+        val expectedKey = "events:${event.eventType.name}:user:${event.userId}"
         val expectedValue = event.toJson()
-        val expectedTtl = Duration.ofSeconds(10)
+        val expectedTtl = Duration.ofMinutes(10)
 
         assertThat(keySlot.captured).isEqualTo(expectedKey)
         assertThat(valueSlot.captured).isEqualTo(expectedValue)

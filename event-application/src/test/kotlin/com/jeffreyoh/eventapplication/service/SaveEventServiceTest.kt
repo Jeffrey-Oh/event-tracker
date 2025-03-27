@@ -1,11 +1,11 @@
 package com.jeffreyoh.eventapplication.service
 
-import com.jeffreyoh.eventapplication.service.SaveEventService
 import com.jeffreyoh.eventcore.domain.event.Event
 import com.jeffreyoh.eventcore.domain.event.EventCommand
 import com.jeffreyoh.eventcore.domain.event.EventMetadata
 import com.jeffreyoh.eventcore.domain.event.EventType
 import com.jeffreyoh.eventport.input.SaveEventUseCase
+import com.jeffreyoh.eventport.output.IncrementCountPort
 import com.jeffreyoh.eventport.output.SaveEventPort
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -22,11 +22,12 @@ import reactor.test.StepVerifier
 class SaveEventServiceTest {
 
     @MockK private lateinit var saveEventPort: SaveEventPort
+    @MockK private lateinit var incrementCountPort: IncrementCountPort
     private lateinit var saveEventService: SaveEventUseCase
 
     @BeforeEach
     fun setUp() {
-        saveEventService = SaveEventService(saveEventPort)
+        saveEventService = SaveEventService(saveEventPort, incrementCountPort)
     }
 
     @Test
@@ -46,7 +47,7 @@ class SaveEventServiceTest {
         val slot = slot<Event>()
         val event = command.toEvent()
 
-        every { saveEventPort.saveToRedis(capture(slot)) } returns Mono.empty()
+        every { saveEventPort.saveToRedis(capture(slot)).then(incrementCountPort.incrementCount(event.metadata.componentId, event.eventType)) } returns Mono.empty()
 
         // when
         val result = saveEventService.saveEvent(command)

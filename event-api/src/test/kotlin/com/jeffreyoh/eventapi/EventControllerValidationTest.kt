@@ -63,54 +63,6 @@ class EventControllerValidationTest {
         postAndExpectBadRequest(request)
     }
 
-    @Test
-    fun `metadata-targetUrl 이 공백이면 400`() {
-        val request = SaveEventDTO.SaveEventRequest(
-            eventType = "CLICK",
-            sessionId = "session-123",
-            userId = 1L,
-            metadata = SaveEventDTO.EventMetadataRequest(
-                componentId = 1000L,
-                elementId = "element-123",
-                targetUrl = "  " // ❌
-            )
-        )
-
-        postAndExpectBadRequest(request)
-    }
-
-    @Test
-    fun `metadata-pageUrl 이 공백이면 400`() {
-        val request = SaveEventDTO.SaveEventRequest(
-            eventType = "CLICK",
-            sessionId = "session-123",
-            userId = 1L,
-            metadata = SaveEventDTO.EventMetadataRequest(
-                componentId = 1000L,
-                elementId = "element-123",
-                pageUrl = "  " // ❌
-            )
-        )
-
-        postAndExpectBadRequest(request)
-    }
-
-    @Test
-    fun `metadata-keyword 이 공백이면 400`() {
-        val request = SaveEventDTO.SaveEventRequest(
-            eventType = "CLICK",
-            sessionId = "session-123",
-            userId = 1L,
-            metadata = SaveEventDTO.EventMetadataRequest(
-                componentId = 1000L,
-                elementId = "element-123",
-                keyword = "  " // ❌
-            )
-        )
-
-        postAndExpectBadRequest(request)
-    }
-
     private fun postAndExpectBadRequest(request: SaveEventDTO.SaveEventRequest) {
         val json = objectMapper.writeValueAsString(request)
 

@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.testImplementation
-
 plugins {
     kotlin("plugin.spring")
     id("org.springframework.boot")
