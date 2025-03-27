@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 
-import com.jeffreyoh.eventapi.adapter.inbound.web.dto.SaveEventRequest
+import com.jeffreyoh.eventapi.adapter.inbound.web.dto.SaveEventDTO
 import com.jeffreyoh.eventapi.adapter.inbound.web.handler.EventHandler
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
@@ -22,7 +22,7 @@ class EventController(
 
     @PostMapping
     fun receiveEvent(
-        @RequestBody @Valid request: SaveEventRequest
+        @RequestBody @Valid request: SaveEventDTO.SaveEventRequest
     ): Mono<ResponseEntity<Void>> {
         log.debug { "Received API request: $request" }
         return eventHandler.saveEvent(request)
