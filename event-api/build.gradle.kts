@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.testImplementation
+
 plugins {
     kotlin("plugin.spring")
     id("org.springframework.boot")
@@ -10,9 +12,14 @@ dependencies {
     implementation(project(":event-application"))
     implementation(project(":event-storage"))
 
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0")
     implementation("io.projectreactor:reactor-core")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.mockk:mockk:1.13.9")
+    testImplementation("org.assertj:assertj-core:3.25.3")
+    testImplementation("io.projectreactor:reactor-test")
 }

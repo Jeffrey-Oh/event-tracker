@@ -3,31 +3,50 @@ package com.jeffreyoh.eventapi.adapter.inbound.web.dto
 import com.jeffreyoh.eventcore.domain.event.EventCommand
 import com.jeffreyoh.eventcore.domain.event.EventMetadata
 import com.jeffreyoh.eventcore.domain.event.EventType
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 
-data class SaveEventRequest(
-    @field:NotBlank
-    val eventType: String,
+class SaveEventDTO {
 
-    val userId: Long?,
+    data class SaveEventRequest(
+        @field:NotBlank
+        val eventType: String,
 
-    @field:NotBlank
-    val sessionId: String,
+        val userId: Long?,
 
-    @field:NotNull
-    val metadata: EventMetadata,
-) {
-    fun toCommand(): EventCommand.SaveEventCommand {
-        return EventCommand.SaveEventCommand(
-            eventType.toEventTypeOrThrow(),
-            userId,
-            sessionId,
-            metadata
-        )
+        @field:NotBlank
+        val sessionId: String,
+
+        @field:Valid
+        val metadata: EventMetadataRequest,
+    ) {
+        fun toCommand(): EventCommand.SaveEventCommand {
+            return EventCommand.SaveEventCommand(
+                eventType.toEventTypeOrThrow(),
+                userId,
+                sessionId,
+                EventMetadata(
+                    metadata.componentId,
+                    metadata.elementId,
+                    metadata.targetUrl,
+                    metadata.pageUrl,
+                    metadata.keyword,
+                )
+            )
+        }
     }
+
+    data class EventMetadataRequest(
+        val componentId: Long, // 요소 값이 가변적일 수 있으므로 실질적인 ID 별도 저장
+        @field:NotBlank val elementId: String, // 프론트에서 사용하는 요소 값
+        @field:NotBlank val targetUrl: String? = null,
+        @field:NotBlank val pageUrl: String? = null,
+        @field:NotBlank val keyword: String? = null,
+    )
+
 }
 
 // 확장 함수

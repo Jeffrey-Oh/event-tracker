@@ -4,14 +4,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import java.util.function.Consumer
 
 private val log = KotlinLogging.logger {}
 
 @Configuration
 class RedisConfig(
-    val reactiveRedisTemplate: ReactiveRedisTemplate<String, String>
+    val reactiveRedisTemplate: ReactiveStringRedisTemplate
 ) : ApplicationListener<ApplicationReadyEvent> {
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
