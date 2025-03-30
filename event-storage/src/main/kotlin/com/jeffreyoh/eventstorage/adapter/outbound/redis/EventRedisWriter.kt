@@ -20,7 +20,7 @@ class SaveEventRedisAdapter(
         log.info { "Saving event to Redis: $event" }
 
         val idKey = event.userId?.let { "user:$it" } ?: "session:${event.sessionId}"
-        val key = "events:${event.eventType.name}:${idKey}"
+        val key = "events:${event.eventType.name.toString().lowercase()}:${idKey}"
         val value = event.toJson()
 
         return redisTemplate.opsForValue()
