@@ -4,5 +4,8 @@ import com.jeffreyoh.eventcore.domain.event.Event
 import reactor.core.publisher.Mono
 
 interface SaveEventPort {
+    
     fun saveToRedis(event: Event): Mono<Void>
+    fun saveLikeEventToRedis(key: String, event: Event): Mono<Void>
+
 }

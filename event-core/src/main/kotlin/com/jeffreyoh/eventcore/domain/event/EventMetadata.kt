@@ -6,4 +6,5 @@ data class EventMetadata(
     val targetUrl: String? = null,
     val pageUrl: String? = null,
     val keyword: String? = null,
+    val postId: Long? = null,
 )

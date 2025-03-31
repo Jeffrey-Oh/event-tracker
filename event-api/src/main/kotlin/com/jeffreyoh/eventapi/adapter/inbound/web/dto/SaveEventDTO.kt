@@ -1,5 +1,6 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.dto
 
+import com.jeffreyoh.eventapi.infrastructure.exception.ValidationException
 import com.jeffreyoh.eventcore.domain.event.EventCommand
 import com.jeffreyoh.eventcore.domain.event.EventMetadata
 import com.jeffreyoh.eventcore.domain.event.EventType
@@ -24,8 +25,18 @@ class SaveEventDTO {
         val metadata: EventMetadataRequest,
     ) {
         fun toCommand(): EventCommand.SaveEventCommand {
+            val eventType = eventType.toEventTypeOrThrow()
+
+            if (eventType == EventType.LIKE && userId == null) {
+                throw ValidationException(HttpStatus.BAD_REQUEST, "userId is required for eventType: $eventType")
+            }
+
+            if (eventType == EventType.LIKE && metadata.postId == null) {
+                throw ValidationException(HttpStatus.BAD_REQUEST, "metadata.postId is required for eventType: $eventType")
+            }
+
             return EventCommand.SaveEventCommand(
-                eventType.toEventTypeOrThrow(),
+                eventType,
                 userId,
                 sessionId,
                 EventMetadata(
@@ -34,6 +45,7 @@ class SaveEventDTO {
                     metadata.targetUrl,
                     metadata.pageUrl,
                     metadata.keyword,
+                    metadata.postId
                 )
             )
         }
@@ -45,6 +57,7 @@ class SaveEventDTO {
         val targetUrl: String? = null,
         val pageUrl: String? = null,
         val keyword: String? = null,
+        val postId: Long? = null,
     )
 
 }

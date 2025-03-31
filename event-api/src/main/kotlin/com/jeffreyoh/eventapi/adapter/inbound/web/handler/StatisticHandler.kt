@@ -1,21 +1,21 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.handler
 
-import com.jeffreyoh.eventapi.adapter.inbound.web.dto.ClickStatisticDTO
+import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticDTO
 import com.jeffreyoh.eventcore.domain.event.EventType
-import com.jeffreyoh.eventport.input.GetClickStatisticUseCase
+import com.jeffreyoh.eventport.input.GetEventStatisticUseCase
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
 class StatisticHandler(
-    private val getClickStatisticUseCase: GetClickStatisticUseCase
+    private val getEventStatisticUseCase: GetEventStatisticUseCase
 ) {
 
-    fun getClickCount(componentId: Long, eventType: EventType): Mono<ClickStatisticDTO.ClistStatisticResponse> {
-        return getClickStatisticUseCase.getCount(componentId, eventType)
+    fun getClickCount(componentId: Long, eventType: EventType): Mono<EventStatisticDTO.EventStatisticResponse> {
+        return getEventStatisticUseCase.getCount(componentId, eventType)
             .map {
                 count ->
-                ClickStatisticDTO.ClistStatisticResponse(
+                EventStatisticDTO.EventStatisticResponse(
                     componentId,
                     count
                 )

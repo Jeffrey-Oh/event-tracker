@@ -22,7 +22,8 @@ fun Event.toJson(): String {
             "pageUrl": "${metadata.pageUrl}",
             "elementId": "${metadata.elementId}",
             "targetUrl": "${metadata.targetUrl}",
-            "keyword": "${metadata.keyword}"
+            "keyword": "${metadata.keyword}",
+            "postId": "${metadata.postId}"
         }
     }"""
 }

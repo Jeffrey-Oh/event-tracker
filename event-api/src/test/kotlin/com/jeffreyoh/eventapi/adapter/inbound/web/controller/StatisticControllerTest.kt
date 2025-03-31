@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 
-import com.jeffreyoh.eventapi.adapter.inbound.web.dto.ClickStatisticDTO
+import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticDTO
 import com.jeffreyoh.eventapi.adapter.inbound.web.handler.StatisticHandler
 import com.jeffreyoh.eventcore.domain.event.EventType
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,7 +29,7 @@ class StatisticControllerTest {
         val expectedResult = 100L
 
         given(statisticHandler.getClickCount(componentId, eventType))
-            .willReturn(Mono.just(ClickStatisticDTO.ClistStatisticResponse(componentId, expectedResult)))
+            .willReturn(Mono.just(EventStatisticDTO.EventStatisticResponse(componentId, expectedResult)))
 
         // when
         val response = webTestClient.get()
@@ -38,7 +38,7 @@ class StatisticControllerTest {
 
         // then
         response.expectStatus().isOk
-            .expectBody(ClickStatisticDTO.ClistStatisticResponse::class.java)
+            .expectBody(EventStatisticDTO.EventStatisticResponse::class.java)
             .consumeWith {
                 assertEquals(componentId, it.responseBody!!.componentId)
                 assertEquals(expectedResult, it.responseBody!!.count)
@@ -52,7 +52,7 @@ class StatisticControllerTest {
         val eventType = EventType.CLICK
 
         given(statisticHandler.getClickCount(componentId, eventType))
-            .willReturn(Mono.just(ClickStatisticDTO.ClistStatisticResponse(componentId, 0L)))
+            .willReturn(Mono.just(EventStatisticDTO.EventStatisticResponse(componentId, 0L)))
 
         // when
         val response = webTestClient.get()
@@ -61,7 +61,7 @@ class StatisticControllerTest {
 
         // then
         response.expectStatus().isOk
-            .expectBody(ClickStatisticDTO.ClistStatisticResponse::class.java)
+            .expectBody(EventStatisticDTO.EventStatisticResponse::class.java)
             .consumeWith {
                 assertEquals(componentId, it.responseBody!!.componentId)
                 assertEquals(0L, it.responseBody!!.count)

@@ -40,4 +40,17 @@ class GlobalExceptionHandler {
         )
     }
 
+    @ExceptionHandler(ValidationException::class)
+    fun handleCustomValidation(ex: ValidationException): Mono<ResponseEntity<Map<String, Any>>> {
+        return Mono.just(
+            ResponseEntity.badRequest().body(
+                mapOf(
+                    "status" to 400,
+                    "message" to "Validation failed",
+                    "details" to ex.message
+                )
+            )
+        )
+    }
+
 }

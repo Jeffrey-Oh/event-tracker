@@ -24,11 +24,11 @@ import java.time.LocalDateTime
 class RedisEventWriterTest {
 
     @MockK private lateinit var redisTemplate: ReactiveStringRedisTemplate
-    private lateinit var saveEventRedisAdapter: SaveEventRedisAdapter
+    private lateinit var eventRedisWriter: EventRedisWriter
 
     @BeforeEach
     fun setUp() {
-        saveEventRedisAdapter = SaveEventRedisAdapter(redisTemplate)
+        eventRedisWriter = EventRedisWriter(redisTemplate)
     }
 
     @Test
@@ -58,7 +58,7 @@ class RedisEventWriterTest {
         } returns Mono.empty()
 
         // when
-        val result = saveEventRedisAdapter.saveToRedis(event)
+        val result = eventRedisWriter.saveToRedis(event)
 
         // then
         StepVerifier.create(result)

@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 
-import com.jeffreyoh.eventapi.adapter.inbound.web.dto.ClickStatisticDTO
+import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticDTO
 import com.jeffreyoh.eventapi.adapter.inbound.web.dto.toEventTypeOrThrow
 import com.jeffreyoh.eventapi.adapter.inbound.web.handler.StatisticHandler
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,7 +19,7 @@ class StatisticController(
     fun getClickCount(
         @PathVariable eventType: String,
         @PathVariable componentId: Long
-    ): Mono<ClickStatisticDTO.ClistStatisticResponse> {
+    ): Mono<EventStatisticDTO.EventStatisticResponse> {
         return statisticHandler.getClickCount(componentId, eventType.toEventTypeOrThrow())
     }
 

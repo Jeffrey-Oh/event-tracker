@@ -4,4 +4,5 @@ enum class EventType {
     PAGE_VIEW,
     SEARCH,
     CLICK,
+    LIKE
 }
