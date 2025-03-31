@@ -1,8 +1,8 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.dto
 
-class ClickStatisticDTO {
+class EventStatisticDTO {
 
-    data class ClistStatisticResponse(
+    data class EventStatisticResponse(
         val componentId: Long,
         val count: Long,
     )

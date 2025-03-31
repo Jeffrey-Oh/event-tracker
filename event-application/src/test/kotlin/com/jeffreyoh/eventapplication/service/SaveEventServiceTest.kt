@@ -5,7 +5,10 @@ import com.jeffreyoh.eventcore.domain.event.EventCommand
 import com.jeffreyoh.eventcore.domain.event.EventMetadata
 import com.jeffreyoh.eventcore.domain.event.EventType
 import com.jeffreyoh.eventport.input.SaveEventUseCase
+import com.jeffreyoh.eventport.output.DecrementCountPort
+import com.jeffreyoh.eventport.output.DeleteEventPort
 import com.jeffreyoh.eventport.output.IncrementCountPort
+import com.jeffreyoh.eventport.output.ReadEventPort
 import com.jeffreyoh.eventport.output.SaveEventPort
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -22,12 +25,21 @@ import reactor.test.StepVerifier
 class SaveEventServiceTest {
 
     @MockK private lateinit var saveEventPort: SaveEventPort
+    @MockK private lateinit var deleteEventPort: DeleteEventPort
+    @MockK private lateinit var readEventPort: ReadEventPort
     @MockK private lateinit var incrementCountPort: IncrementCountPort
+    @MockK private lateinit var decrementCountPort: DecrementCountPort
     private lateinit var saveEventService: SaveEventUseCase
 
     @BeforeEach
     fun setUp() {
-        saveEventService = SaveEventService(saveEventPort, incrementCountPort)
+        saveEventService = SaveEventService(
+            saveEventPort,
+            deleteEventPort,
+            readEventPort,
+            incrementCountPort,
+            decrementCountPort
+        )
     }
 
     @Test
