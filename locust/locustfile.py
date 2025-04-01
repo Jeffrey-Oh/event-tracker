@@ -18,6 +18,7 @@ class EventUser(HttpUser):
         }
 
         if event_type == "LIKE":
+            metadata["componentId"] = 100
             metadata["postId"] = random.randint(1, 10)
 
         self.client.post("/api/events", json={

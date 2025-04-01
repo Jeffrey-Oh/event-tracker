@@ -5,6 +5,7 @@ import com.jeffreyoh.eventport.output.DecrementCountPort
 import com.jeffreyoh.eventport.output.GetStatisticCountPort
 import com.jeffreyoh.eventport.output.IncrementCountPort
 import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
@@ -44,8 +45,19 @@ class StatisticRedisAdapter(
         componentId: Long,
         postId: Long
     ): Mono<Void> {
-        return redisTemplate.opsForValue()
-            .decrement(KEY_PREFIX_POST_LIKE.format(EventType.LIKE.name.lowercase(), componentId, postId))
+        val key = KEY_PREFIX_POST_LIKE.format(EventType.LIKE.name.lowercase(), componentId, postId)
+        val luaScript = RedisScript.of(
+            """
+        local current = redis.call('GET', KEYS[1])
+        if current and tonumber(current) > 0 then
+            return redis.call('DECR', KEYS[1])
+        else
+            return current or 0
+        end
+        """.trimIndent(),
+            Long::class.java
+        )
+        return redisTemplate.execute(luaScript, listOf(key))
             .then()
     }
 
