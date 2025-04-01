@@ -1,7 +1,7 @@
 package com.jeffreyoh.eventapplication.service
 
 import com.jeffreyoh.eventcore.domain.event.EventType
-import com.jeffreyoh.eventport.output.GetStatisticCountPort
+import com.jeffreyoh.eventport.output.StatisticsRedisPort
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -15,14 +15,14 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 @ExtendWith(MockKExtension::class)
-class GetStatisticServiceTest {
+class GetStatisticsServiceTest {
 
-    @MockK private lateinit var getStatisticCountPort: GetStatisticCountPort
-    private lateinit var getStatisticService: GetStatisticService
+    @MockK private lateinit var statisticsRedisPort: StatisticsRedisPort
+    private lateinit var getStatisticsService: GetStatisticsService
 
     @BeforeEach
     fun setUp() {
-        getStatisticService = GetStatisticService(getStatisticCountPort)
+        getStatisticsService = GetStatisticsService(statisticsRedisPort)
     }
 
     @ParameterizedTest
@@ -32,10 +32,10 @@ class GetStatisticServiceTest {
         val componentId = 1000L
         val expectedCount = 500L
 
-        every { getStatisticCountPort.getCount(componentId, eventType) } returns Mono.just(expectedCount)
+        every { statisticsRedisPort.getCount(componentId, eventType) } returns Mono.just(expectedCount)
 
         // when
-        val result = getStatisticService.getCount(componentId, eventType)
+        val result = getStatisticsService.getCount(componentId, eventType)
 
         // then
         StepVerifier.create(result)
@@ -44,7 +44,7 @@ class GetStatisticServiceTest {
             }
             .verifyComplete()
 
-        verify(exactly = 1) { getStatisticCountPort.getCount(componentId, eventType) }
+        verify(exactly = 1) { statisticsRedisPort.getCount(componentId, eventType) }
     }
 
 }

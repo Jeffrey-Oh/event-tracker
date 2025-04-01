@@ -1,9 +1,11 @@
 package com.jeffreyoh.eventstorage.adapter.outbound.redis
 
 import com.jeffreyoh.eventcore.domain.event.EventType
+import com.jeffreyoh.eventport.output.StatisticsRedisPort
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
+import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,27 +14,21 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ReactiveValueOperations
+import org.springframework.data.redis.core.script.RedisScript
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 @ExtendWith(MockKExtension::class)
-class StatisticRedisAdapterTest {
+class StatisticsRedisAdapterTest {
 
-    private lateinit var redisTemplate: ReactiveRedisTemplate<String, Long>
-    private lateinit var valueOps: ReactiveValueOperations<String, Long>
-    private lateinit var getStatisticCountPort: StatisticRedisAdapter
-    private lateinit var incrementCountPort: StatisticRedisAdapter
-    private lateinit var decrementCountPort: StatisticRedisAdapter
+    @MockK private lateinit var redisTemplate: ReactiveRedisTemplate<String, Long>
+    @MockK private lateinit var valueOps: ReactiveValueOperations<String, Long>
+    private lateinit var statisticsRedisAdapter: StatisticsRedisPort
 
     @BeforeEach
     fun setUp() {
-        redisTemplate = mockk()
-        valueOps = mockk()
-        getStatisticCountPort = StatisticRedisAdapter(redisTemplate)
-        incrementCountPort = StatisticRedisAdapter(redisTemplate)
-        decrementCountPort = StatisticRedisAdapter(redisTemplate)
-
-        every { redisTemplate.opsForValue() } returns valueOps
+        statisticsRedisAdapter = StatisticsRedisAdapter(redisTemplate)
     }
 
     @ParameterizedTest
@@ -43,10 +39,11 @@ class StatisticRedisAdapterTest {
         val expectedCount = 500L
         val redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
 
+        every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.get(redisKey) } returns Mono.just(expectedCount)
 
         // when
-        val result = getStatisticCountPort.getCount(componentId, eventType)
+        val result = statisticsRedisAdapter.getCount(componentId, eventType)
 
         // then
         StepVerifier.create(result)
@@ -63,10 +60,11 @@ class StatisticRedisAdapterTest {
         val componentId = 1000L
         val redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
 
+        every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.increment(redisKey) } returns Mono.empty()
 
         // when
-        val result = incrementCountPort.incrementCount(componentId, eventType)
+        val result = statisticsRedisAdapter.incrementCount(componentId, eventType)
 
         // then
         StepVerifier.create(result)
@@ -80,10 +78,11 @@ class StatisticRedisAdapterTest {
         val postId = 1L
         val redisKey = "statistics:${EventType.LIKE.name.lowercase()}:component:$componentId:post:$postId"
 
+        every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.increment(redisKey) } returns Mono.empty()
 
         // when
-        val result = incrementCountPort.incrementLikeCount(componentId, postId)
+        val result = statisticsRedisAdapter.incrementLikeCount(componentId, postId)
 
         // then
         StepVerifier.create(result)
@@ -95,16 +94,20 @@ class StatisticRedisAdapterTest {
         // given
         val componentId = 1000L
         val postId = 1L
-        val redisKey = "statistics:${EventType.LIKE.name.lowercase()}:component:$componentId:post:$postId"
+        val keySlot = slot<List<String>>()
+        val scriptSlot = slot<RedisScript<Long>>()
 
-        every { valueOps.decrement(redisKey) } returns Mono.empty()
+        every { redisTemplate.execute(capture(scriptSlot), capture(keySlot)) } returns Flux.just(1L)
 
         // when
-        val result = decrementCountPort.decrementLikeCount(componentId, postId)
+        val result = statisticsRedisAdapter.decrementLikeCount(componentId, postId)
 
         // then
         StepVerifier.create(result)
             .verifyComplete()
+
+        assertThat(keySlot.captured.first()).isEqualTo("statistics:like:component:$componentId:post:$postId")
+        assertThat(scriptSlot.captured.scriptAsString).contains("redis.call('GET', KEYS[1])")
     }
 
 }

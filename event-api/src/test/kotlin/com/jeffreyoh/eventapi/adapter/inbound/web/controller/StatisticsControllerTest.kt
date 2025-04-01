@@ -1,7 +1,7 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 
-import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticDTO
-import com.jeffreyoh.eventapi.adapter.inbound.web.handler.StatisticHandler
+import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticsDTO
+import com.jeffreyoh.eventapi.adapter.inbound.web.handler.StatisticsHandler
 import com.jeffreyoh.eventcore.domain.event.EventType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -12,14 +12,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 
-@WebFluxTest(StatisticController::class)
-class StatisticControllerTest {
+@WebFluxTest(StatisticsController::class)
+class StatisticsControllerTest {
 
     @Autowired
     private lateinit var webTestClient: WebTestClient
 
     @MockitoBean
-    private lateinit var statisticHandler: StatisticHandler
+    private lateinit var statisticsHandler: StatisticsHandler
 
     @Test
     fun `정상적인 통계 조회 요청은 200 OK와 통계 결과를 반환한다`() {
@@ -28,8 +28,8 @@ class StatisticControllerTest {
         val eventType = EventType.CLICK
         val expectedResult = 100L
 
-        given(statisticHandler.getClickCount(componentId, eventType))
-            .willReturn(Mono.just(EventStatisticDTO.EventStatisticResponse(componentId, expectedResult)))
+        given(statisticsHandler.getClickCount(componentId, eventType))
+            .willReturn(Mono.just(EventStatisticsDTO.EventStatisticsResponse(componentId, expectedResult)))
 
         // when
         val response = webTestClient.get()
@@ -38,7 +38,7 @@ class StatisticControllerTest {
 
         // then
         response.expectStatus().isOk
-            .expectBody(EventStatisticDTO.EventStatisticResponse::class.java)
+            .expectBody(EventStatisticsDTO.EventStatisticsResponse::class.java)
             .consumeWith {
                 assertEquals(componentId, it.responseBody!!.componentId)
                 assertEquals(expectedResult, it.responseBody!!.count)
@@ -51,8 +51,8 @@ class StatisticControllerTest {
         val componentId = 9999L
         val eventType = EventType.CLICK
 
-        given(statisticHandler.getClickCount(componentId, eventType))
-            .willReturn(Mono.just(EventStatisticDTO.EventStatisticResponse(componentId, 0L)))
+        given(statisticsHandler.getClickCount(componentId, eventType))
+            .willReturn(Mono.just(EventStatisticsDTO.EventStatisticsResponse(componentId, 0L)))
 
         // when
         val response = webTestClient.get()
@@ -61,7 +61,7 @@ class StatisticControllerTest {
 
         // then
         response.expectStatus().isOk
-            .expectBody(EventStatisticDTO.EventStatisticResponse::class.java)
+            .expectBody(EventStatisticsDTO.EventStatisticsResponse::class.java)
             .consumeWith {
                 assertEquals(componentId, it.responseBody!!.componentId)
                 assertEquals(0L, it.responseBody!!.count)

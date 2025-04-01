@@ -1,18 +1,16 @@
 package com.jeffreyoh.eventstorage.adapter.outbound.redis
 
 import com.jeffreyoh.eventcore.domain.event.EventType
-import com.jeffreyoh.eventport.output.DecrementCountPort
-import com.jeffreyoh.eventport.output.GetStatisticCountPort
-import com.jeffreyoh.eventport.output.IncrementCountPort
+import com.jeffreyoh.eventport.output.StatisticsRedisPort
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
-class StatisticRedisAdapter(
+class StatisticsRedisAdapter(
     private val redisTemplate: ReactiveRedisTemplate<String, Long>
-): IncrementCountPort, DecrementCountPort, GetStatisticCountPort {
+): StatisticsRedisPort {
 
     companion object {
         private const val KEY_PREFIX_DEFAULT = "statistics:%s:component:%d"
@@ -48,13 +46,13 @@ class StatisticRedisAdapter(
         val key = KEY_PREFIX_POST_LIKE.format(EventType.LIKE.name.lowercase(), componentId, postId)
         val luaScript = RedisScript.of(
             """
-        local current = redis.call('GET', KEYS[1])
-        if current and tonumber(current) > 0 then
-            return redis.call('DECR', KEYS[1])
-        else
-            return current or 0
-        end
-        """.trimIndent(),
+            local current = redis.call('GET', KEYS[1])
+            if current and tonumber(current) > 0 then
+                return redis.call('DECR', KEYS[1])
+            else
+                return current or 0
+            end
+            """.trimIndent(),
             Long::class.java
         )
         return redisTemplate.execute(luaScript, listOf(key))
