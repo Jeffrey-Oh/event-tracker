@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,14 +44,23 @@ class SaveEventServiceTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click"
             )
         )
 
         val slot = slot<Event>()
         val event = command.toEvent()
 
-        every { eventRedisPort.saveToRedis(capture(slot)).then(statisticsRedisPort.incrementCount(event.metadata.componentId, event.eventType)) } returns Mono.empty()
+        every {
+            eventRedisPort.saveToRedis(capture(slot))
+                .then(
+                    when(event.eventType) {
+                        EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
+                        EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
+                        EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                        EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, 1L) // postId는 임의로 설정
+                    }
+                )
+        } returns Mono.empty()
 
         // when
         val result = saveEventService.saveEvent(command)
@@ -63,6 +73,15 @@ class SaveEventServiceTest {
             .usingRecursiveComparison()
             .ignoringFields("createdAt")
             .isEqualTo(event)
+
+        verify(exactly = 1) {
+            when(event.eventType) {
+                EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
+                EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
+                EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, 1L) // postId는 임의로 설정
+            }
+        }
     }
 
 }

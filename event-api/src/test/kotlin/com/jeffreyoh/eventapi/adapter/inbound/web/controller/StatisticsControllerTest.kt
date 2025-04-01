@@ -1,10 +1,12 @@
 package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 
 import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticsDTO
-import com.jeffreyoh.eventapi.adapter.inbound.web.handler.StatisticsHandler
 import com.jeffreyoh.eventcore.domain.event.EventType
+import com.jeffreyoh.eventport.input.GetEventStatisticsUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -19,21 +21,26 @@ class StatisticsControllerTest {
     private lateinit var webTestClient: WebTestClient
 
     @MockitoBean
-    private lateinit var statisticsHandler: StatisticsHandler
+    private lateinit var statisticsUseCase: GetEventStatisticsUseCase
 
-    @Test
-    fun `정상적인 통계 조회 요청은 200 OK와 통계 결과를 반환한다`() {
+    @ParameterizedTest
+    @EnumSource(EventType::class)
+    fun `정상적인 통계 조회 요청은 200 OK와 통계 결과를 반환한다`(eventType: EventType) {
         // given
         val componentId = 1000L
-        val eventType = EventType.CLICK
         val expectedResult = 100L
 
-        given(statisticsHandler.getClickCount(componentId, eventType))
-            .willReturn(Mono.just(EventStatisticsDTO.EventStatisticsResponse(componentId, expectedResult)))
+        given(
+            if (eventType == EventType.LIKE)statisticsUseCase.getLikeCount(componentId, 1L) // postId는 임의로 설정
+            else statisticsUseCase.getCount(componentId, eventType)
+        )
+            .willReturn(Mono.just(100L))
 
         // when
+        var uri = "/api/statistics/${eventType}/$componentId"
+        if (eventType == EventType.LIKE) uri = "/api/statistics/like/$componentId/1" // postId는 임의로 설정
         val response = webTestClient.get()
-            .uri("/api/statistics/${eventType}/$componentId")
+            .uri(uri)
             .exchange()
 
         // then
@@ -51,8 +58,8 @@ class StatisticsControllerTest {
         val componentId = 9999L
         val eventType = EventType.CLICK
 
-        given(statisticsHandler.getClickCount(componentId, eventType))
-            .willReturn(Mono.just(EventStatisticsDTO.EventStatisticsResponse(componentId, 0L)))
+        given(statisticsUseCase.getCount(componentId, eventType))
+            .willReturn(Mono.just(0L))
 
         // when
         val response = webTestClient.get()

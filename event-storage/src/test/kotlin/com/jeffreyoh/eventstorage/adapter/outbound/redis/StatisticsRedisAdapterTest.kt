@@ -37,13 +37,19 @@ class StatisticsRedisAdapterTest {
         // given
         val componentId = 1000L
         val expectedCount = 500L
-        val redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
+        var redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
+        if (eventType == EventType.LIKE) redisKey += ":post:1" // postId는 임의로 설정
 
         every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.get(redisKey) } returns Mono.just(expectedCount)
 
         // when
-        val result = statisticsRedisAdapter.getCount(componentId, eventType)
+        val result = when(eventType) {
+            EventType.CLICK -> statisticsRedisAdapter.getClickCount(componentId)
+            EventType.PAGE_VIEW -> statisticsRedisAdapter.getPageViewCount(componentId)
+            EventType.SEARCH -> statisticsRedisAdapter.getSearchCount(componentId)
+            EventType.LIKE -> statisticsRedisAdapter.getLikeCount(componentId, 1L) // postId는 임의로 설정
+        }
 
         // then
         StepVerifier.create(result)
@@ -54,35 +60,23 @@ class StatisticsRedisAdapterTest {
     }
 
     @ParameterizedTest
-    @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["LIKE"])
+    @EnumSource(EventType::class)
     fun `이벤트 LIKE를 제외한 타입별 Redis 키에 대해 카운트를 증가시킨다`(eventType: EventType) {
         // given
         val componentId = 1000L
-        val redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
+        var redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
+        if (eventType == EventType.LIKE) redisKey += ":post:1" // postId는 임의로 설정
 
         every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.increment(redisKey) } returns Mono.empty()
 
         // when
-        val result = statisticsRedisAdapter.incrementCount(componentId, eventType)
-
-        // then
-        StepVerifier.create(result)
-            .verifyComplete()
-    }
-
-    @Test
-    fun `이벤트 LIKE Redis 키에 대해 카운트를 증가시킨다`() {
-        // given
-        val componentId = 1000L
-        val postId = 1L
-        val redisKey = "statistics:${EventType.LIKE.name.lowercase()}:component:$componentId:post:$postId"
-
-        every { redisTemplate.opsForValue() } returns valueOps
-        every { valueOps.increment(redisKey) } returns Mono.empty()
-
-        // when
-        val result = statisticsRedisAdapter.incrementLikeCount(componentId, postId)
+        val result = when(eventType) {
+            EventType.CLICK -> statisticsRedisAdapter.incrementClick(componentId)
+            EventType.PAGE_VIEW -> statisticsRedisAdapter.incrementPageView(componentId)
+            EventType.SEARCH -> statisticsRedisAdapter.incrementSearch(componentId)
+            EventType.LIKE -> statisticsRedisAdapter.incrementLike(componentId, 1L) // postId는 임의로 설정
+        }
 
         // then
         StepVerifier.create(result)
@@ -100,7 +94,7 @@ class StatisticsRedisAdapterTest {
         every { redisTemplate.execute(capture(scriptSlot), capture(keySlot)) } returns Flux.just(1L)
 
         // when
-        val result = statisticsRedisAdapter.decrementLikeCount(componentId, postId)
+        val result = statisticsRedisAdapter.decrementLike(componentId, postId)
 
         // then
         StepVerifier.create(result)

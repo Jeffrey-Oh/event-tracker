@@ -67,7 +67,6 @@ class EventRedisAdapterTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click"
             ),
             createdAt = LocalDateTime.now()
         )
@@ -106,7 +105,6 @@ class EventRedisAdapterTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click",
                 postId = 1L
             ),
             createdAt = LocalDateTime.now()
@@ -144,7 +142,6 @@ class EventRedisAdapterTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click",
                 postId = 1L
             ),
             createdAt = LocalDateTime.now()

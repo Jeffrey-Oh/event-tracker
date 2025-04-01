@@ -32,10 +32,20 @@ class GetStatisticsServiceTest {
         val componentId = 1000L
         val expectedCount = 500L
 
-        every { statisticsRedisPort.getCount(componentId, eventType) } returns Mono.just(expectedCount)
+        every {
+            when(eventType) {
+                EventType.CLICK -> statisticsRedisPort.getClickCount(componentId)
+                EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
+                EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
+                EventType.LIKE -> statisticsRedisPort.getLikeCount(componentId, 1L) // postId는 임의로 설정
+            }
+        } returns Mono.just(expectedCount)
 
         // when
-        val result = getStatisticsService.getCount(componentId, eventType)
+        val result = when(eventType) {
+            EventType.LIKE -> getStatisticsService.getLikeCount(componentId, 1L) // postId는 임의로 설정
+            else -> getStatisticsService.getCount(componentId, eventType)
+        }
 
         // then
         StepVerifier.create(result)
@@ -44,7 +54,14 @@ class GetStatisticsServiceTest {
             }
             .verifyComplete()
 
-        verify(exactly = 1) { statisticsRedisPort.getCount(componentId, eventType) }
+        verify(exactly = 1) {
+            when(eventType) {
+                EventType.CLICK -> statisticsRedisPort.getClickCount(componentId)
+                EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
+                EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
+                EventType.LIKE -> statisticsRedisPort.getLikeCount(componentId, 1L) // postId는 임의로 설정
+            }
+        }
     }
 
 }

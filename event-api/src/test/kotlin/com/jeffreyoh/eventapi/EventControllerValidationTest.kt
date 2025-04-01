@@ -3,7 +3,7 @@ package com.jeffreyoh.eventapi
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jeffreyoh.eventapi.adapter.inbound.web.controller.EventController
 import com.jeffreyoh.eventapi.adapter.inbound.web.dto.SaveEventDTO
-import com.jeffreyoh.eventapi.adapter.inbound.web.handler.EventHandler
+import com.jeffreyoh.eventport.input.SaveEventUseCase
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -21,15 +21,15 @@ class EventControllerValidationTest {
     private lateinit var objectMapper: ObjectMapper
 
     @MockitoBean
-    private lateinit var eventHandler: EventHandler
+    private lateinit var saveEventUseCase: SaveEventUseCase
 
     @Test
     fun `eventType 이 공백이면 400`() {
         val request = SaveEventDTO.SaveEventRequest(
             eventType = "", // ❌
-            sessionId = "session-123",
             userId = 1L,
-            metadata = SaveEventDTO.EventMetadataRequest(1000L, "element-123", "https://jeffrey-oh.click")
+            sessionId = "session-123",
+            metadata = SaveEventDTO.EventMetadataRequest(1000L, "element-123", "keyword-123", 1L)
         )
 
         postAndExpectBadRequest(request)
@@ -39,9 +39,9 @@ class EventControllerValidationTest {
     fun `sessionId 가 공백이면 400`() {
         val request = SaveEventDTO.SaveEventRequest(
             eventType = "CLICK",
-            sessionId = " ", // ❌
             userId = 1L,
-            metadata = SaveEventDTO.EventMetadataRequest(1000L, "element-123", "https://jeffrey-oh.click")
+            sessionId = " ", // ❌
+            metadata = SaveEventDTO.EventMetadataRequest(1000L, "element-123", "keyword-123", 1L)
         )
 
         postAndExpectBadRequest(request)
@@ -56,7 +56,8 @@ class EventControllerValidationTest {
             metadata = SaveEventDTO.EventMetadataRequest(
                 componentId = 1000L,
                 elementId = "", // ❌
-                targetUrl = "https://jeffrey-oh.click"
+                keyword = "keyword-123",
+                postId = 1L
             )
         )
 

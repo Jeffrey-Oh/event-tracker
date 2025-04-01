@@ -10,7 +10,16 @@ class GetStatisticsService(
 ): GetEventStatisticsUseCase {
 
     override fun getCount(componentId: Long, eventType: EventType): Mono<Long> {
-        return statisticsRedisPort.getCount(componentId, eventType)
+        return when(eventType) {
+            EventType.CLICK -> statisticsRedisPort.getClickCount(componentId)
+            EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
+            EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
+            EventType.LIKE -> Mono.error(IllegalArgumentException("Like count is not supported"))
+        }
+    }
+
+    override fun getLikeCount(componentId: Long, postId: Long): Mono<Long> {
+        return statisticsRedisPort.getLikeCount(componentId, postId)
     }
 
 }

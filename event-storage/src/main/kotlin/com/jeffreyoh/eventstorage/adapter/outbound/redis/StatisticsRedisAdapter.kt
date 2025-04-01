@@ -12,38 +12,62 @@ class StatisticsRedisAdapter(
     private val redisTemplate: ReactiveRedisTemplate<String, Long>
 ): StatisticsRedisPort {
 
-    companion object {
-        private const val KEY_PREFIX_DEFAULT = "statistics:%s:component:%d"
-        private const val KEY_PREFIX_POST_LIKE = "statistics:%s:component:%d:post:%d"
-    }
+    private fun keyEventDefault(eventType: EventType, componentId: Long): String
+        = "statistics:${eventType.name.lowercase()}:component:$componentId"
 
-    override fun incrementCount(componentId: Long, eventType: EventType): Mono<Void> {
-        return redisTemplate.opsForValue()
-            .increment(KEY_PREFIX_DEFAULT.format(eventType.name.lowercase(), componentId))
-            .then()
-    }
+    private fun keyPostLike(componentId: Long, postId: Long): String
+        = "statistics:${EventType.LIKE.name.lowercase()}:component:$componentId:post:$postId"
 
-    override fun incrementLikeCount(
-        componentId: Long,
-        postId: Long
-    ): Mono<Void> {
+    private fun getCount(key: String): Mono<Long> {
         return redisTemplate.opsForValue()
-            .increment(KEY_PREFIX_POST_LIKE.format(EventType.LIKE.name.lowercase(), componentId, postId))
-            .then()
-    }
-
-    override fun getCount(componentId: Long, eventType: EventType): Mono<Long> {
-        return redisTemplate.opsForValue()
-            .get(KEY_PREFIX_DEFAULT.format(eventType.name.lowercase(), componentId))
+            .get(key)
             .mapNotNull { it.toLong() }
             .defaultIfEmpty(0L)
     }
 
-    override fun decrementLikeCount(
+    override fun getLikeCount(componentId: Long, postId: Long): Mono<Long> {
+        return getCount(keyPostLike(componentId, postId))
+    }
+
+    override fun getClickCount(componentId: Long): Mono<Long> {
+        return getCount(keyEventDefault(EventType.CLICK, componentId))
+    }
+
+    override fun getPageViewCount(componentId: Long): Mono<Long> {
+        return getCount(keyEventDefault(EventType.PAGE_VIEW, componentId))
+    }
+
+    override fun getSearchCount(componentId: Long): Mono<Long> {
+        return getCount(keyEventDefault(EventType.SEARCH, componentId))
+    }
+
+    private fun incrementCount(key: String): Mono<Void> {
+        return redisTemplate.opsForValue()
+            .increment(key)
+            .then()
+    }
+
+    override fun incrementClick(componentId: Long): Mono<Void> {
+        return incrementCount(keyEventDefault(EventType.CLICK, componentId))
+    }
+
+    override fun incrementPageView(componentId: Long): Mono<Void> {
+        return incrementCount(keyEventDefault(EventType.PAGE_VIEW, componentId))
+    }
+
+    override fun incrementSearch(componentId: Long): Mono<Void> {
+        return incrementCount(keyEventDefault(EventType.SEARCH, componentId))
+    }
+
+    override fun incrementLike(componentId: Long, postId: Long): Mono<Void> {
+        return incrementCount(keyPostLike(componentId, postId))
+    }
+
+    override fun decrementLike(
         componentId: Long,
         postId: Long
     ): Mono<Void> {
-        val key = KEY_PREFIX_POST_LIKE.format(EventType.LIKE.name.lowercase(), componentId, postId)
+        val key = keyPostLike(componentId, postId)
         val luaScript = RedisScript.of(
             """
             local current = redis.call('GET', KEYS[1])

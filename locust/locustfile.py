@@ -14,8 +14,11 @@ class EventUser(HttpUser):
         metadata = {
             "componentId": random.randint(1000, 2000),
             "elementId": f"element-{random.randint(1, 50)}",
-            "targetUrl": "https://jeffrey-oh.click"
         }
+
+        if event_type == "SEARCH":
+            metadata["componentId"] = 200
+            metadata["keyword"] = f"keyword-{random.randint(1, 10)}"
 
         if event_type == "LIKE":
             metadata["componentId"] = 100

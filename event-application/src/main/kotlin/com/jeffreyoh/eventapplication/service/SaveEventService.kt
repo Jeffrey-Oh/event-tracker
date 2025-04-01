@@ -15,12 +15,15 @@ class SaveEventService(
     private val statisticsRedisPort: StatisticsRedisPort,
 ): SaveEventUseCase {
 
+    private fun keyPostLike(userId: Long, postId: Long): String
+        = "events:${EventType.LIKE.name.lowercase()}:user:$userId:post:$postId"
+
     override fun saveEvent(command: EventCommand.SaveEventCommand): Mono<Void> {
         log.debug { "UseCase handle called: $command" }
         val event = command.toEvent()
 
         return if (event.eventType == EventType.LIKE) {
-            val key = "events:${event.eventType.name.lowercase()}:user:${event.userId!!}:post:${event.metadata.postId}"
+            val key = keyPostLike(command.userId!!, command.metadata.postId!!)
 
             eventRedisPort.readLikeFromRedisKey(key)
                 .defaultIfEmpty("MISSING")
@@ -28,16 +31,23 @@ class SaveEventService(
                     if (cachedEvent == "MISSING") {
                         log.info { "Event does not exist in Redis, saving it" }
                         eventRedisPort.saveLikeEventToRedis(key, event)
-                            .then(statisticsRedisPort.incrementLikeCount(event.metadata.componentId, event.metadata.postId!!))
+                            .then(statisticsRedisPort.incrementLike(event.metadata.componentId, event.metadata.postId!!))
                     } else {
                         log.info { "Event already exists in Redis, deleting it" }
                         eventRedisPort.deleteFromRedisKey(key)
-                            .then(statisticsRedisPort.decrementLikeCount(event.metadata.componentId, event.metadata.postId!!))
+                            .then(statisticsRedisPort.decrementLike(event.metadata.componentId, event.metadata.postId!!))
                     }
                 }
         } else {
             eventRedisPort.saveToRedis(event)
-                .then(statisticsRedisPort.incrementCount(event.metadata.componentId, event.eventType))
+                .then(
+                    when(event.eventType) {
+                        EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
+                        EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
+                        EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                        else -> Mono.empty()
+                    }
+                )
         }
     }
 
