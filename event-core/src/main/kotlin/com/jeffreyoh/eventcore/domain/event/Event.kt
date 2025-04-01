@@ -19,9 +19,7 @@ fun Event.toJson(): String {
         "createdAt": "$createdAt",
         "metadata": {
             "componentId": "${metadata.componentId}",
-            "pageUrl": "${metadata.pageUrl}",
             "elementId": "${metadata.elementId}",
-            "targetUrl": "${metadata.targetUrl}",
             "keyword": "${metadata.keyword}",
             "postId": "${metadata.postId}"
         }

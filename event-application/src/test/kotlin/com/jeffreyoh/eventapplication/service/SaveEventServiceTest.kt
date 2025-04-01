@@ -5,15 +5,13 @@ import com.jeffreyoh.eventcore.domain.event.EventCommand
 import com.jeffreyoh.eventcore.domain.event.EventMetadata
 import com.jeffreyoh.eventcore.domain.event.EventType
 import com.jeffreyoh.eventport.input.SaveEventUseCase
-import com.jeffreyoh.eventport.output.DecrementCountPort
-import com.jeffreyoh.eventport.output.DeleteEventPort
-import com.jeffreyoh.eventport.output.IncrementCountPort
-import com.jeffreyoh.eventport.output.ReadEventPort
-import com.jeffreyoh.eventport.output.SaveEventPort
+import com.jeffreyoh.eventport.output.EventRedisPort
+import com.jeffreyoh.eventport.output.StatisticsRedisPort
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,21 +22,15 @@ import reactor.test.StepVerifier
 @ExtendWith(MockKExtension::class)
 class SaveEventServiceTest {
 
-    @MockK private lateinit var saveEventPort: SaveEventPort
-    @MockK private lateinit var deleteEventPort: DeleteEventPort
-    @MockK private lateinit var readEventPort: ReadEventPort
-    @MockK private lateinit var incrementCountPort: IncrementCountPort
-    @MockK private lateinit var decrementCountPort: DecrementCountPort
+    @MockK private lateinit var eventRedisPort: EventRedisPort
+    @MockK private lateinit var statisticsRedisPort: StatisticsRedisPort
     private lateinit var saveEventService: SaveEventUseCase
 
     @BeforeEach
     fun setUp() {
         saveEventService = SaveEventService(
-            saveEventPort,
-            deleteEventPort,
-            readEventPort,
-            incrementCountPort,
-            decrementCountPort
+            eventRedisPort,
+            statisticsRedisPort,
         )
     }
 
@@ -52,14 +44,23 @@ class SaveEventServiceTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click"
             )
         )
 
         val slot = slot<Event>()
         val event = command.toEvent()
 
-        every { saveEventPort.saveToRedis(capture(slot)).then(incrementCountPort.incrementCount(event.metadata.componentId, event.eventType)) } returns Mono.empty()
+        every {
+            eventRedisPort.saveToRedis(capture(slot))
+                .then(
+                    when(event.eventType) {
+                        EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
+                        EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
+                        EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                        EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, 1L) // postId는 임의로 설정
+                    }
+                )
+        } returns Mono.empty()
 
         // when
         val result = saveEventService.saveEvent(command)
@@ -72,6 +73,15 @@ class SaveEventServiceTest {
             .usingRecursiveComparison()
             .ignoringFields("createdAt")
             .isEqualTo(event)
+
+        verify(exactly = 1) {
+            when(event.eventType) {
+                EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
+                EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
+                EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, 1L) // postId는 임의로 설정
+            }
+        }
     }
 
 }

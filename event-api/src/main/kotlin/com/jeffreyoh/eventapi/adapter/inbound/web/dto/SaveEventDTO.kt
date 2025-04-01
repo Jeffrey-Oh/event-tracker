@@ -42,8 +42,6 @@ class SaveEventDTO {
                 EventMetadata(
                     metadata.componentId,
                     metadata.elementId,
-                    metadata.targetUrl,
-                    metadata.pageUrl,
                     metadata.keyword,
                     metadata.postId
                 )
@@ -54,8 +52,6 @@ class SaveEventDTO {
     data class EventMetadataRequest(
         @field:Min(1) val componentId: Long, // 요소 값이 가변적일 수 있으므로 실질적인 ID 별도 저장
         @field:NotBlank val elementId: String, // 프론트에서 사용하는 요소 값
-        val targetUrl: String? = null,
-        val pageUrl: String? = null,
         val keyword: String? = null,
         val postId: Long? = null,
     )

@@ -2,9 +2,11 @@ package com.jeffreyoh.eventapi.adapter.inbound.web.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jeffreyoh.eventapi.adapter.inbound.web.dto.SaveEventDTO
-import com.jeffreyoh.eventapi.adapter.inbound.web.handler.EventHandler
 import com.jeffreyoh.eventcore.domain.event.EventType
+import com.jeffreyoh.eventport.input.SaveEventUseCase
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -25,25 +27,28 @@ class EventControllerTest {
     private lateinit var objectMapper: ObjectMapper
 
     @MockitoBean
-    private lateinit var eventHandler: EventHandler
+    private lateinit var saveEventUseCase: SaveEventUseCase
 
-    @Test
-    fun `이벤트 저장 요청이 handler 로 전달된다`() {
+    @ParameterizedTest
+    @EnumSource(EventType::class)
+    fun `이벤트 저장 요청이 usecase 로 전달된다`(eventType: EventType) {
         // given
         val request = SaveEventDTO.SaveEventRequest(
-            eventType = EventType.CLICK.name,
+            eventType = eventType.name,
             sessionId = "session-123",
             userId = 1,
             metadata = SaveEventDTO.EventMetadataRequest(
                 componentId = 1000,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click"
+                keyword = "keyword-123",
+                postId = 1L,
             )
         )
 
         val json = objectMapper.writeValueAsString(request)
+        val command = request.toCommand()
 
-        given(eventHandler.saveEvent(request)).willReturn(Mono.empty())
+        given(saveEventUseCase.saveEvent(command)).willReturn(Mono.empty())
 
         // when
         webTestClient.post()
@@ -54,7 +59,7 @@ class EventControllerTest {
             .expectStatus().isCreated
 
         // then
-        verify(eventHandler, times(1)).saveEvent(request)
+        verify(saveEventUseCase, times(1)).saveEvent(command)
     }
 
 }

@@ -7,7 +7,6 @@ import com.jeffreyoh.eventcore.domain.event.toJson
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -24,18 +23,37 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 @ExtendWith(MockKExtension::class)
-class EventRedisWriterTest {
+class EventRedisAdapterTest {
 
     @MockK private lateinit var redisTemplate: ReactiveStringRedisTemplate
-    private lateinit var valueOps: ReactiveValueOperations<String, String>
-    private lateinit var saveEventPort: EventRedisWriter
+    @MockK private lateinit var valueOps: ReactiveValueOperations<String, String>
+    private lateinit var eventRedisAdapter: EventRedisAdapter
 
     @BeforeEach
     fun setUp() {
-        valueOps = mockk()
-        saveEventPort = EventRedisWriter(redisTemplate)
+        eventRedisAdapter = EventRedisAdapter(redisTemplate)
 
         every { redisTemplate.opsForValue() } returns valueOps
+    }
+
+    @Test
+    fun `이벤트를 Redis에서 읽는다`() {
+        // given
+        val key = "events:like:user:1:post:1"
+
+        val keySlot = slot<String>()
+        val expectedValue = "event-data"
+        every { valueOps.get(capture(keySlot)) } returns Mono.just(expectedValue)
+
+        // when
+        val result = eventRedisAdapter.readLikeFromRedisKey(key)
+
+        // then
+        StepVerifier.create(result)
+            .expectNext(expectedValue)
+            .verifyComplete()
+
+        assertThat(keySlot.captured).isEqualTo(key)
     }
 
     @ParameterizedTest
@@ -49,7 +67,6 @@ class EventRedisWriterTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click"
             ),
             createdAt = LocalDateTime.now()
         )
@@ -63,7 +80,7 @@ class EventRedisWriterTest {
         } returns Mono.empty()
 
         // when
-        val result = saveEventPort.saveToRedis(event)
+        val result = eventRedisAdapter.saveToRedis(event)
 
         // then
         StepVerifier.create(result)
@@ -88,7 +105,6 @@ class EventRedisWriterTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click",
                 postId = 1L
             ),
             createdAt = LocalDateTime.now()
@@ -104,7 +120,7 @@ class EventRedisWriterTest {
         } returns Mono.empty()
 
         // when
-        val result = saveEventPort.saveLikeEventToRedis(expectedKey, event)
+        val result = eventRedisAdapter.saveLikeEventToRedis(expectedKey, event)
 
         // then
         StepVerifier.create(result)
@@ -126,7 +142,6 @@ class EventRedisWriterTest {
             metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
-                targetUrl = "https://jeffrey-oh.click",
                 postId = 1L
             ),
             createdAt = LocalDateTime.now()
@@ -138,7 +153,7 @@ class EventRedisWriterTest {
         val expectedKey = "events:${event.eventType.name.lowercase()}:user:${event.userId!!}:post:${event.metadata.postId}"
 
         // when
-        val result = saveEventPort.deleteFromRedisKey(expectedKey)
+        val result = eventRedisAdapter.deleteFromRedisKey(expectedKey)
 
         // then
         StepVerifier.create(result)

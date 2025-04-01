@@ -2,8 +2,7 @@ package com.jeffreyoh.eventstorage.adapter.outbound.redis
 
 import com.jeffreyoh.eventcore.domain.event.Event
 import com.jeffreyoh.eventcore.domain.event.toJson
-import com.jeffreyoh.eventport.output.DeleteEventPort
-import com.jeffreyoh.eventport.output.SaveEventPort
+import com.jeffreyoh.eventport.output.EventRedisPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Component
@@ -13,9 +12,17 @@ import java.time.Duration
 private val log = KotlinLogging.logger {}
 
 @Component
-class EventRedisWriter(
+class EventRedisAdapter(
     private val redisTemplate: ReactiveStringRedisTemplate
-): SaveEventPort, DeleteEventPort {
+): EventRedisPort {
+
+    override fun readLikeFromRedisKey(key: String): Mono<String> {
+        log.info { "Reading event to Redis" }
+
+        return redisTemplate.opsForValue()
+            .get(key)
+            .switchIfEmpty(Mono.empty())
+    }
 
     override fun saveToRedis(event: Event): Mono<Void> {
         log.info { "Saving event to Redis: $event" }
