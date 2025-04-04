@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: event-tracker
+
+  codec:
+    max-in-memory-size: 10MB
+
+  main:
+    web-application-type: reactive
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+logging:
+  level:
+    org.springframework.data.redis: DEBUG
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  data:
+    redis:
+      host: localhost
+      port: 63790
