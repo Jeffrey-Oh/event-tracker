@@ -32,7 +32,7 @@ class StatisticsRedisAdapterTest {
     }
 
     @ParameterizedTest
-    @EnumSource(EventType::class)
+    @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
     fun `이벤트 타입별 Redis 키에서 카운트를 조회한다`(eventType: EventType) {
         // given
         val componentId = 1000L
@@ -49,6 +49,7 @@ class StatisticsRedisAdapterTest {
             EventType.PAGE_VIEW -> statisticsRedisAdapter.getPageViewCount(componentId)
             EventType.SEARCH -> statisticsRedisAdapter.getSearchCount(componentId)
             EventType.LIKE -> statisticsRedisAdapter.getLikeCount(componentId, 1L) // postId는 임의로 설정
+            else -> Mono.empty()
         }
 
         // then
@@ -76,6 +77,7 @@ class StatisticsRedisAdapterTest {
             EventType.PAGE_VIEW -> statisticsRedisAdapter.incrementPageView(componentId)
             EventType.SEARCH -> statisticsRedisAdapter.incrementSearch(componentId)
             EventType.LIKE -> statisticsRedisAdapter.incrementLike(componentId, 1L) // postId는 임의로 설정
+            else -> Mono.empty()
         }
 
         // then

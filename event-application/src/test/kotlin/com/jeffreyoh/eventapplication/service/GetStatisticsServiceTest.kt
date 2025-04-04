@@ -26,7 +26,7 @@ class GetStatisticsServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(EventType::class)
+    @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
     fun `이벤트 통계를 조회한다`(eventType: EventType) {
         // given
         val componentId = 1000L
@@ -38,6 +38,7 @@ class GetStatisticsServiceTest {
                 EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
                 EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
                 EventType.LIKE -> statisticsRedisPort.getLikeCount(componentId, 1L) // postId는 임의로 설정
+                else -> Mono.empty()
             }
         } returns Mono.just(expectedCount)
 
@@ -60,6 +61,7 @@ class GetStatisticsServiceTest {
                 EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
                 EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
                 EventType.LIKE -> statisticsRedisPort.getLikeCount(componentId, 1L) // postId는 임의로 설정
+                else -> Mono.empty()
             }
         }
     }

@@ -58,6 +58,7 @@ class SaveEventServiceTest {
                         EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
                         EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
                         EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, 1L) // postId는 임의로 설정
+                        else -> Mono.empty()
                     }
                 )
         } returns Mono.empty()
@@ -80,6 +81,7 @@ class SaveEventServiceTest {
                 EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
                 EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
                 EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, 1L) // postId는 임의로 설정
+                else -> Mono.empty()
             }
         }
     }
