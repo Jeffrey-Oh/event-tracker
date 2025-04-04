@@ -8,6 +8,7 @@ dependencies {
 	implementation(project(":user-service:user-core"))
 	implementation(project(":user-service:user-port"))
 
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
 	implementation("org.postgresql:r2dbc-postgresql")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")

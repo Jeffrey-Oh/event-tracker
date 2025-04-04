@@ -4,7 +4,6 @@ include(
     "event-tracker:event-core",
     "event-tracker:event-application",
     "event-tracker:event-port",
-    "event-tracker:event-statistics",
     "event-tracker:event-storage",
     "user-service:user-api",
     "user-service:user-core",

@@ -1,6 +1,14 @@
+server:
+  port: 8081
+
 spring:
   application:
-    name: event-tracker
+    name: user-service
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/event_db
+    username: event_user
+    password: event_pass
 
   codec:
     max-in-memory-size: 10MB
@@ -15,6 +23,9 @@ spring:
 
 logging:
   level:
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
     org.springframework.data.redis: DEBUG
 
 ---

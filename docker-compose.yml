@@ -23,17 +23,29 @@ services:
       - redisdata:/data
     restart: always
 
-  locust:
+  event-locust:
     container_name: event_locust
     build:
-      context: ./locust
+      context: ./event-tracker/locust
     ports:
       - "8089:8089"
     volumes:
-      - ./locust:/mnt/locust
+      - ./event-tracker/locust:/mnt/locust
     working_dir: /mnt/locust
     command: >
       locust -f locustfile.py --host=http://host.docker.internal:8080
+
+  user-locust:
+    container_name: user_locust
+    build:
+      context: ./user-service/locust
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./user-service/locust:/mnt/locust
+    working_dir: /mnt/locust
+    command: >
+      locust -f locustfile.py --host=http://host.docker.internal:8081
 
 volumes:
   pgdata:
