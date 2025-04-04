@@ -29,13 +29,17 @@ class SaveEventService(
                 .defaultIfEmpty("MISSING")
                 .flatMap { cachedEvent ->
                     if (cachedEvent == "MISSING") {
-                        log.info { "Event does not exist in Redis, saving it" }
-                        eventRedisPort.saveLikeEventToRedis(key, event)
-                            .then(statisticsRedisPort.incrementLike(event.metadata.componentId, event.metadata.postId!!))
+                        val likeEvent = event.copy(eventType = EventType.LIKE)
+                        log.info { "LIKE 이벤트 저장" }
+                        eventRedisPort.saveLikeEventToRedis(key, likeEvent)
+                            .then(statisticsRedisPort.incrementLike(likeEvent.metadata.componentId, likeEvent.metadata.postId!!))
+                            .then(eventRedisPort.saveToRedis(likeEvent))
                     } else {
-                        log.info { "Event already exists in Redis, deleting it" }
+                        val unLikeEvent = event.copy(eventType = EventType.UNLIKE)
+                        log.info { "UNLIKE 이벤트 저장" }
                         eventRedisPort.deleteFromRedisKey(key)
-                            .then(statisticsRedisPort.decrementLike(event.metadata.componentId, event.metadata.postId!!))
+                            .then(statisticsRedisPort.decrementLike(unLikeEvent.metadata.componentId, unLikeEvent.metadata.postId!!))
+                            .then(eventRedisPort.saveToRedis(unLikeEvent))
                     }
                 }
         } else {
