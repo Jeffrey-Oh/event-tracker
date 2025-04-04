@@ -15,6 +15,7 @@ class GetStatisticsService(
             EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
             EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
             EventType.LIKE -> Mono.error(IllegalArgumentException("Like count is not supported"))
+            EventType.UNLIKE ->Mono.error(IllegalArgumentException("UnLike count is not supported"))
         }
     }
 
