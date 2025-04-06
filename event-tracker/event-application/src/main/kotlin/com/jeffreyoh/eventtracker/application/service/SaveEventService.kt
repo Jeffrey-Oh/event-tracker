@@ -33,13 +33,11 @@ class SaveEventService(
                         log.info { "LIKE 이벤트 저장" }
                         eventRedisPort.saveLikeEventToRedis(key, likeEvent)
                             .then(statisticsRedisPort.incrementLike(likeEvent.metadata.componentId, likeEvent.metadata.postId!!))
-                            .then(eventRedisPort.saveToRedis(likeEvent))
                     } else {
                         val unLikeEvent = event.copy(eventType = EventType.UNLIKE)
                         log.info { "UNLIKE 이벤트 저장" }
                         eventRedisPort.deleteFromRedisKey(key)
                             .then(statisticsRedisPort.decrementLike(unLikeEvent.metadata.componentId, unLikeEvent.metadata.postId!!))
-                            .then(eventRedisPort.saveToRedis(unLikeEvent))
                     }
                 }
         } else {

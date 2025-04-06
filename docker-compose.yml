@@ -45,7 +45,7 @@ services:
       - ./user-service/locust:/mnt/locust
     working_dir: /mnt/locust
     command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8081
+      locust -f locustfile.py --host=http://host.docker.internal:8081 --web-port 8090
 
 volumes:
   pgdata:

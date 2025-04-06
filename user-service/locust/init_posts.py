@@ -19,7 +19,7 @@ async def create_post(session, post_id):
                 headers={"Content-Type": "application/json"}
             )
 
-            if post_id % 500 == 0:
+            if post_id % 5 == 0:
                 print(f"✅ {post_id} posts created")
         except Exception as e:
             print(f"❌ Error on {post_id}: {e}")
@@ -27,7 +27,7 @@ async def create_post(session, post_id):
 async def main():
     async with httpx.AsyncClient() as session:
         print("🟢 작업 시작")
-        await asyncio.gather(*[create_post(session, i) for i in range(1, 10001)])
+        await asyncio.gather(*[create_post(session, i) for i in range(1, 101)])
         print("✅ 작업 끝")
 
 asyncio.run(main())

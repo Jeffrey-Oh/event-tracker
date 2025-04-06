@@ -1,15 +1,17 @@
-package com.jeffreyoh.userservice.storage.adapter
+package com.jeffreyoh.userservice.storage.adapter.postgre
 
 import com.jeffreyoh.userservice.core.domain.PostLike
 import com.jeffreyoh.userservice.port.out.PostLikeCommandPort
+import com.jeffreyoh.userservice.storage.adapter.postgre.repository.PostLikeCustomRepository
 import com.jeffreyoh.userservice.storage.entity.PostLikeEntity
-import com.jeffreyoh.userservice.storage.repository.PostLikeRepository
+import com.jeffreyoh.userservice.storage.adapter.postgre.repository.PostLikeRepository
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
 class PostLikeAdapter(
     private val postLikeRepository: PostLikeRepository,
+    private val postLikeCustomRepository: PostLikeCustomRepository
 ) : PostLikeCommandPort {
 
     override fun findByUserIdAndPostId(
@@ -25,11 +27,11 @@ class PostLikeAdapter(
                     likedAt = postLike.likedAt
                 )
             }
-            .switchIfEmpty(Mono.error(NoSuchElementException("PostLike not found")))
+            .switchIfEmpty(Mono.empty())
     }
 
     override fun save(postLike: PostLike): Mono<PostLike> {
-        return postLikeRepository.save(PostLikeEntity.fromDomain(postLike))
+        return postLikeCustomRepository.save(PostLikeEntity.fromDomain(postLike))
             .map { savedPostLike ->
                 PostLike(
                     postLikeId = savedPostLike.postLikeId!!,
