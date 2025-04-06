@@ -14,7 +14,7 @@ private val log = KotlinLogging.logger {}
 @Component
 @EnableR2dbcAuditing
 @EnableR2dbcRepositories(
-    basePackages = ["com.jeffreyoh.userservice.storage.repository"]
+    basePackages = ["com.jeffreyoh.userservice.storage.adapter.postgre.repository"],
 )
 class R2dbcConfig(
     val databaseClient: DatabaseClient

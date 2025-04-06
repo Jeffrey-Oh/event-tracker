@@ -1,4 +1,4 @@
-package com.jeffreyoh.userservice.storage.repository
+package com.jeffreyoh.userservice.storage.adapter.postgre.repository
 
 import com.jeffreyoh.userservice.storage.entity.PostLikeEntity
 import org.springframework.data.repository.reactive.ReactiveCrudRepository

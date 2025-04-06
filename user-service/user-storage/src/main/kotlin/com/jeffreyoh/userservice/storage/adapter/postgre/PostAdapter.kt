@@ -1,9 +1,9 @@
-package com.jeffreyoh.userservice.storage.adapter
+package com.jeffreyoh.userservice.storage.adapter.postgre
 
 import com.jeffreyoh.userservice.core.domain.Post
 import com.jeffreyoh.userservice.port.out.PostCommandPort
 import com.jeffreyoh.userservice.storage.entity.PostEntity
-import com.jeffreyoh.userservice.storage.repository.PostRepository
+import com.jeffreyoh.userservice.storage.adapter.postgre.repository.PostRepository
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
