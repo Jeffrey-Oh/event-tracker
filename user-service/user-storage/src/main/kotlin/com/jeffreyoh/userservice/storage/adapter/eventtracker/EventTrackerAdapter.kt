@@ -32,4 +32,23 @@ class EventTrackerAdapter(
         }
     }
 
+    override fun sendSearchEvent(command: EventTrackerCommand.SearchCommand): Mono<Void> {
+        EventTrackerOutboundDTO.SaveEventRequest(
+            eventType = command.eventType,
+            userId = command.userId,
+            sessionId = UUID.randomUUID().toString(),
+            metadata = EventTrackerOutboundDTO.EventMetadata(
+                componentId = 1000L,
+                elementId = "elementId-123",
+                keyword = command.keyword
+            )
+        ).let { request ->
+            return webClient.post()
+                .uri("/api/events")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Void::class.java)
+        }
+    }
+
 }

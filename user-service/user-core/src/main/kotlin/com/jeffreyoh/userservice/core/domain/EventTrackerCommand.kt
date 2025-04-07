@@ -9,7 +9,14 @@ class EventTrackerCommand {
     )
 
     enum class EventType {
+        SEARCH,
         LIKE
     }
+
+    data class SearchCommand(
+        val eventType: EventType,
+        val userId: Long,
+        val keyword: String
+    )
 
 }
