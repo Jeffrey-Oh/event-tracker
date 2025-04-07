@@ -6,6 +6,7 @@ import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
 import com.jeffreyoh.eventtracker.port.output.EventRedisPort
+import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
 import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -24,6 +25,7 @@ class SaveEventServiceTest {
 
     @MockK private lateinit var eventRedisPort: EventRedisPort
     @MockK private lateinit var statisticsRedisPort: StatisticsRedisPort
+    @MockK private lateinit var recentSearchRedisPort: RecentSearchRedisPort
     private lateinit var saveEventService: SaveEventUseCase
 
     @BeforeEach
@@ -31,6 +33,7 @@ class SaveEventServiceTest {
         saveEventService = SaveEventService(
             eventRedisPort,
             statisticsRedisPort,
+            recentSearchRedisPort
         )
     }
 

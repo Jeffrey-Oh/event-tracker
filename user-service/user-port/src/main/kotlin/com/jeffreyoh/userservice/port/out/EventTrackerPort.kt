@@ -6,5 +6,6 @@ import reactor.core.publisher.Mono
 interface EventTrackerPort {
 
     fun sendEvent(command: EventTrackerCommand.PayloadCommand): Mono<Void>
+    fun sendSearchEvent(command: EventTrackerCommand.SearchCommand): Mono<Void>
 
 }

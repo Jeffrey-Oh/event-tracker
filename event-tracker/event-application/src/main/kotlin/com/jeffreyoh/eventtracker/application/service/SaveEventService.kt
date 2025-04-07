@@ -4,6 +4,7 @@ import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
 import com.jeffreyoh.eventtracker.port.output.EventRedisPort
+import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
 import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import reactor.core.publisher.Mono
@@ -13,6 +14,7 @@ private val log = KotlinLogging.logger {}
 class SaveEventService(
     private val eventRedisPort: EventRedisPort,
     private val statisticsRedisPort: StatisticsRedisPort,
+    private val recentSearchRedisPort: RecentSearchRedisPort
 ): SaveEventUseCase {
 
     private fun keyPostLike(userId: Long, postId: Long): String
@@ -46,7 +48,10 @@ class SaveEventService(
                     when(event.eventType) {
                         EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
                         EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
-                        EventType.SEARCH -> statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                        EventType.SEARCH -> {
+                            statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                                .then(recentSearchRedisPort.saveRecentKeyword(event.userId!!, event.metadata.keyword!!))
+                        }
                         else -> Mono.empty()
                     }
                 )

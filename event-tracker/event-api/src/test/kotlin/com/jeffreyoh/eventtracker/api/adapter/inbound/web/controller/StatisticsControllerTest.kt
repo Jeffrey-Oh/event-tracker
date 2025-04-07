@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.api.adapter.inbound.web.controller
 
-import com.jeffreyoh.eventapi.adapter.inbound.web.dto.EventStatisticsDTO
+import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.EventStatisticsDTO
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.input.GetEventStatisticsUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
