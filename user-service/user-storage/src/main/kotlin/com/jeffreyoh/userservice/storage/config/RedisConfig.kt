@@ -1,4 +1,4 @@
-package com.jeffreyoh.eventtracker.storage.config
+package com.jeffreyoh.userservice.storage.config
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
-import java.util.function.Consumer
 
 private val log = KotlinLogging.logger {}
 

@@ -7,7 +7,7 @@ data class Post(
     val userId: Long,
     val content: String,
     val imageUrls: String?,
-    val hashTags: List<String>? = emptyList(),
+    val hashtags: List<String>? = emptyList(),
     val visibility: Visibility = Visibility.PUBLIC,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime = LocalDateTime.now(),

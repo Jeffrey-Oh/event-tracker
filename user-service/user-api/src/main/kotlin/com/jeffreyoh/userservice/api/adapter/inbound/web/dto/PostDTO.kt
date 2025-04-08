@@ -10,14 +10,14 @@ class PostDTO {
         val userId: Long,
         val content: String,
         val imageUrls: String?,
-        val hashTags: List<String>? = emptyList()
+        val hashtags: List<String>? = emptyList()
     ) {
         fun toCommand(): PostCommand.CreatePostCommand {
             return PostCommand.CreatePostCommand(
                 userId = userId,
                 content = content,
                 imageUrls = imageUrls,
-                hashTags = hashTags
+                hashtags = hashtags
             )
         }
     }
@@ -39,7 +39,7 @@ class PostDTO {
         val userId: Long,
         val content: String,
         val imageUrls: String?,
-        val hashTags: List<String>?,
+        val hashtags: List<String>?,
         val createdAt: String,
         val updatedAt: String
     ) {
@@ -50,7 +50,7 @@ class PostDTO {
                     userId = post.userId,
                     content = post.content,
                     imageUrls = post.imageUrls,
-                    hashTags = post.hashTags,
+                    hashtags = post.hashtags,
                     createdAt = post.createdAt.toString(),
                     updatedAt = post.updatedAt.toString()
                 )

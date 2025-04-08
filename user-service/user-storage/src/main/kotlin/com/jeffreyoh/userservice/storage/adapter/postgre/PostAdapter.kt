@@ -4,8 +4,8 @@ import com.jeffreyoh.userservice.core.domain.Post
 import com.jeffreyoh.userservice.port.out.PostCommandPort
 import com.jeffreyoh.userservice.port.out.PostSearchPort
 import com.jeffreyoh.userservice.storage.adapter.postgre.repository.PostCustomRepository
-import com.jeffreyoh.userservice.storage.entity.PostEntity
 import com.jeffreyoh.userservice.storage.adapter.postgre.repository.PostRepository
+import com.jeffreyoh.userservice.storage.entity.PostEntity
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono

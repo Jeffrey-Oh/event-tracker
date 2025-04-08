@@ -12,7 +12,7 @@ data class PostEntity(
     val userId: Long,
     val content: String,
     val imageUrls: String?,
-    val hashTags: List<String>? = emptyList(),
+    val hashtags: List<String>? = emptyList(),
     val visibility: Visibility = Visibility.PUBLIC,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime = LocalDateTime.now(),
@@ -25,7 +25,7 @@ data class PostEntity(
                 userId = post.userId,
                 content = post.content,
                 imageUrls = post.imageUrls,
-                hashTags = post.hashTags,
+                hashtags = post.hashtags,
                 visibility = post.visibility,
                 createdAt = post.createdAt,
                 updatedAt = post.updatedAt
@@ -39,7 +39,7 @@ data class PostEntity(
             userId = userId,
             content = content,
             imageUrls = imageUrls,
-            hashTags = hashTags,
+            hashtags = hashtags,
             visibility = visibility,
             createdAt = createdAt,
             updatedAt = updatedAt

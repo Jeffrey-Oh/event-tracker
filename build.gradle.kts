@@ -27,6 +27,9 @@ subprojects {
 
         // 공통 로깅 (모든 모듈에서 사용)
         implementation("io.github.oshai:kotlin-logging-jvm:7.0.5")
+
+        // mac os netty DNS
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.2.0.Final")
     }
 
     // 컴파일러 설정
