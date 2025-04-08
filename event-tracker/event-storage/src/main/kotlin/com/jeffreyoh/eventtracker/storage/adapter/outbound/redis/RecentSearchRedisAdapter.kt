@@ -4,6 +4,7 @@ import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
 
@@ -33,17 +34,18 @@ class RecentSearchRedisAdapter(
         // LPUSH - 리스트 앞에 추가
         // LTRIM - 리스트 크기 제한
         // EXPIRE - TTL 설정
+        val key = getKey(userId)
         return redisTemplate.opsForList()
-            .remove(getKey(userId), 0, keyword)
-            .then(redisTemplate.opsForList().leftPush(getKey(userId), keyword))
-            .then(redisTemplate.opsForList().trim(getKey(userId), 0, RECENT_KEYWORD_LIMIT - 1L))
-            .then(redisTemplate.expire(getKey(userId), Duration.ofHours(TTL_HOURS)))
+            .remove(key, 0, keyword)
+            .then(redisTemplate.opsForList().leftPush(key, keyword))
+            .then(redisTemplate.opsForList().trim(key, 0, RECENT_KEYWORD_LIMIT - 1L))
+            .then(redisTemplate.expire(key, Duration.ofHours(TTL_HOURS)))
             .then()
 
     }
 
-    override fun getRecentKeywords(userId: Long): Mono<List<String>> {
-        return redisTemplate.opsForList().range(getKey(userId), 0, -1).collectList()
+    override fun getRecentKeywords(userId: Long): Flux<String> {
+        return redisTemplate.opsForList().range(getKey(userId), 0, -1)
     }
 
 }
