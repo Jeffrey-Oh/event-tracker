@@ -6,14 +6,11 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.redis.core.ReactiveListOperations
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
-import org.springframework.data.redis.core.ReactiveValueOperations
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -41,9 +38,7 @@ class RecentSearchRedisAdapterTest {
         private const val KEY = "recent:search:user:%d"
     }
 
-    private fun getKey(userId: Long): String {
-        return KEY.format(userId)
-    }
+    private fun getKey(userId: Long): String = KEY.format(userId)
 
     @Test
     fun `최근 키워드 최대 10개까지 저장한다`() {
@@ -93,7 +88,7 @@ class RecentSearchRedisAdapterTest {
         val result = recentSearchRedisAdapter.getRecentKeywords(userId)
 
         // then
-        StepVerifier.create(result.collectList())
+        StepVerifier.create(result)
             .expectNext(expectedKeyword)
             .verifyComplete()
 

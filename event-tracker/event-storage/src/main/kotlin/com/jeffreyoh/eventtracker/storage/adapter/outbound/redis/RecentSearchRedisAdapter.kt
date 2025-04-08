@@ -4,7 +4,6 @@ import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
 
@@ -21,9 +20,7 @@ class RecentSearchRedisAdapter(
         private const val KEY = "recent:search:user:%d"
     }
 
-    private fun getKey(userId: Long): String {
-        return KEY.format(userId)
-    }
+    private fun getKey(userId: Long): String = KEY.format(userId)
 
     override fun saveRecentKeyword(
         userId: Long,
@@ -44,8 +41,8 @@ class RecentSearchRedisAdapter(
 
     }
 
-    override fun getRecentKeywords(userId: Long): Flux<String> {
-        return redisTemplate.opsForList().range(getKey(userId), 0, -1)
+    override fun getRecentKeywords(userId: Long): Mono<List<String>> {
+        return redisTemplate.opsForList().range(getKey(userId), 0, -1).collectList()
     }
 
 }

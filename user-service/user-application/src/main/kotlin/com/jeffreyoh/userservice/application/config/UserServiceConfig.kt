@@ -6,10 +6,7 @@ import com.jeffreyoh.userservice.application.service.TogglePostLikeService
 import com.jeffreyoh.userservice.port.`in`.CreatePostUseCase
 import com.jeffreyoh.userservice.port.`in`.SearchUseCase
 import com.jeffreyoh.userservice.port.`in`.TogglePostLikeUseCase
-import com.jeffreyoh.userservice.port.out.EventTrackerPort
-import com.jeffreyoh.userservice.port.out.PostCommandPort
-import com.jeffreyoh.userservice.port.out.PostLikeCommandPort
-import com.jeffreyoh.userservice.port.out.PostSearchPort
+import com.jeffreyoh.userservice.port.out.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -35,11 +32,13 @@ class UserServiceConfig {
     @Bean
     fun searchUseCase(
         eventTrackerPort: EventTrackerPort,
-        postSearchPort: PostSearchPort
+        postSearchPort: PostSearchPort,
+        readRedisPost: ReadRedisPort
     ) : SearchUseCase =
         SearchService(
             eventTrackerPort,
-            postSearchPort
+            postSearchPort,
+            readRedisPost
     )
 
 }

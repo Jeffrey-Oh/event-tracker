@@ -6,14 +6,14 @@ class PostCommand {
         val userId: Long,
         val content: String,
         val imageUrls: String?,
-        val hashTags: List<String>?
+        val hashtags: List<String>?
     ) {
         fun toPost(): Post {
             return Post(
                 userId = userId,
                 content = content,
                 imageUrls = imageUrls,
-                hashTags = hashTags
+                hashtags = hashtags
             )
         }
     }

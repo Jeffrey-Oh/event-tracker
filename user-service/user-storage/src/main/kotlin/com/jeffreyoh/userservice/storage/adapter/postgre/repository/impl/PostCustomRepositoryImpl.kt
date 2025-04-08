@@ -20,7 +20,7 @@ class PostCustomRepositoryImpl(
             """
             SELECT * FROM post 
             WHERE content ILIKE '%' || :keyword || '%' 
-               OR :keyword = ANY(hash_tags)
+               OR :keyword = ANY(hashtags)
             LIMIT :limit
             """.trimIndent()
 
@@ -33,7 +33,7 @@ class PostCustomRepositoryImpl(
                     userId = row.get("user_id", Long::class.java)!!,
                     content = row.get("content", String::class.java)!!,
                     imageUrls = row.get("image_urls", String::class.java),
-                    hashTags = row.get("hash_tags", Array<String>::class.java)?.toList() ?: emptyList(),
+                    hashtags = row.get("hashtags", Array<String>::class.java)?.toList() ?: emptyList(),
                     createdAt = row.get("created_at", LocalDateTime::class.java)!!
                 )
             }
