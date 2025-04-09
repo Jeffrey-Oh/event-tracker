@@ -47,6 +47,20 @@ services:
     command: >
       locust -f locustfile.py --host=http://host.docker.internal:8081 --web-port 8090
 
+  all-locust:
+    container_name: all_locust
+    build:
+      context: ./user-service/locust
+    ports:
+      - "8091:8091"
+    volumes:
+      - ./user-service/locust:/mnt/locust
+    working_dir: /mnt/locust
+    command: >
+      locust -f locustfile_all.py --web-port 8091
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   pgdata:
   redisdata:
