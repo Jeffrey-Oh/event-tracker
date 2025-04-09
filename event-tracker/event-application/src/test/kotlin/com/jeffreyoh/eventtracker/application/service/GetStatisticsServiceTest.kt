@@ -1,10 +1,12 @@
 package com.jeffreyoh.eventtracker.application.service
 
+import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -32,12 +34,15 @@ class GetStatisticsServiceTest {
         val componentId = 1000L
         val expectedCount = 500L
 
+        val eventTypeSlot = slot<EventType>()
+        val eventMetadataSlot = slot<EventMetadata>()
+
         every {
             when(eventType) {
-                EventType.CLICK -> statisticsRedisPort.getClickCount(componentId)
-                EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
-                EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
-                EventType.LIKE -> statisticsRedisPort.getLikeCount(componentId, 1L) // postId는 임의로 설정
+                EventType.CLICK -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
+                EventType.PAGE_VIEW -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
+                EventType.SEARCH -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
+                EventType.LIKE -> statisticsRedisPort.getEventCount(EventType.LIKE, capture(eventMetadataSlot))
                 else -> Mono.empty()
             }
         } returns Mono.just(expectedCount)
@@ -57,10 +62,10 @@ class GetStatisticsServiceTest {
 
         verify(exactly = 1) {
             when(eventType) {
-                EventType.CLICK -> statisticsRedisPort.getClickCount(componentId)
-                EventType.PAGE_VIEW -> statisticsRedisPort.getPageViewCount(componentId)
-                EventType.SEARCH -> statisticsRedisPort.getSearchCount(componentId)
-                EventType.LIKE -> statisticsRedisPort.getLikeCount(componentId, 1L) // postId는 임의로 설정
+                EventType.CLICK -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
+                EventType.PAGE_VIEW -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
+                EventType.SEARCH -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
+                EventType.LIKE -> statisticsRedisPort.getEventCount(EventType.LIKE, capture(eventMetadataSlot))
                 else -> Mono.empty()
             }
         }
