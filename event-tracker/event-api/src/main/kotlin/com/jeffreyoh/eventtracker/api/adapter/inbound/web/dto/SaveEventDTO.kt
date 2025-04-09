@@ -35,6 +35,10 @@ class SaveEventDTO {
                 throw ValidationException(HttpStatus.BAD_REQUEST, "metadata.postId is required for eventType: $eventType")
             }
 
+            if (metadata.elementId?.isBlank() == true) {
+                throw ValidationException(HttpStatus.BAD_REQUEST, "metadata.elementId is required")
+            }
+
             return EventCommand.SaveEventCommand(
                 eventType,
                 userId,
@@ -51,7 +55,7 @@ class SaveEventDTO {
 
     data class EventMetadataRequest(
         @field:Min(1) val componentId: Long, // 요소 값이 가변적일 수 있으므로 실질적인 ID 별도 저장
-        @field:NotBlank val elementId: String, // 프론트에서 사용하는 요소 값
+        val elementId: String? = null, // 프론트에서 사용하는 요소 값
         val keyword: String? = null,
         val postId: Long? = null,
     )

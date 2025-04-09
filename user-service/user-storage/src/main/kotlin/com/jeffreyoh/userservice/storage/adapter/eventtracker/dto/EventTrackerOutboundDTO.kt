@@ -13,7 +13,7 @@ class EventTrackerOutboundDTO {
 
     data class EventMetadata(
         val componentId: Long,
-        val elementId: String,
+        val elementId: String? = null,
         val keyword: String? = null,
         val postId: Long? = null,
     )

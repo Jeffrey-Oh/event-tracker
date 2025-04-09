@@ -46,10 +46,10 @@ class SaveEventService(
             eventRedisPort.saveToRedis(event)
                 .then(
                     when(event.eventType) {
-                        EventType.CLICK -> statisticsRedisPort.incrementClick(event.metadata.componentId)
-                        EventType.PAGE_VIEW -> statisticsRedisPort.incrementPageView(event.metadata.componentId)
+                        EventType.CLICK -> statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
+                        EventType.PAGE_VIEW -> statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
                         EventType.SEARCH -> {
-                            statisticsRedisPort.incrementSearch(event.metadata.componentId)
+                            statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
                                 .then(recentSearchRedisPort.saveRecentKeyword(event.userId!!, event.metadata.keyword!!))
                         }
                         else -> Mono.empty()

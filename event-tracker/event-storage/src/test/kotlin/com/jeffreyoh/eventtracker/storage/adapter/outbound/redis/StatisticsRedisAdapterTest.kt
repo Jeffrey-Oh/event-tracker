@@ -1,5 +1,6 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
+import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.mockk.every
@@ -37,20 +38,14 @@ class StatisticsRedisAdapterTest {
         // given
         val componentId = 1000L
         val expectedCount = 500L
-        var redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
-        if (eventType == EventType.LIKE) redisKey += ":post:1" // postId는 임의로 설정
+        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
-        every { valueOps.get(redisKey) } returns Mono.just(expectedCount)
+        every { valueOps.get(capture(redisKeySlot)) } returns Mono.just(expectedCount)
 
         // when
-        val result = when(eventType) {
-            EventType.CLICK -> statisticsRedisAdapter.getClickCount(componentId)
-            EventType.PAGE_VIEW -> statisticsRedisAdapter.getPageViewCount(componentId)
-            EventType.SEARCH -> statisticsRedisAdapter.getSearchCount(componentId)
-            EventType.LIKE -> statisticsRedisAdapter.getLikeCount(componentId, 1L) // postId는 임의로 설정
-            else -> Mono.empty()
-        }
+        val result = statisticsRedisAdapter.getEventCount(eventType, metadata)
 
         // then
         StepVerifier.create(result)
@@ -61,24 +56,18 @@ class StatisticsRedisAdapterTest {
     }
 
     @ParameterizedTest
-    @EnumSource(EventType::class)
+    @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
     fun `이벤트 LIKE를 제외한 타입별 Redis 키에 대해 카운트를 증가시킨다`(eventType: EventType) {
         // given
         val componentId = 1000L
-        var redisKey = "statistics:${eventType.name.lowercase()}:component:$componentId"
-        if (eventType == EventType.LIKE) redisKey += ":post:1" // postId는 임의로 설정
+        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
-        every { valueOps.increment(redisKey) } returns Mono.empty()
+        every { valueOps.increment(capture(redisKeySlot)) } returns Mono.empty()
 
         // when
-        val result = when(eventType) {
-            EventType.CLICK -> statisticsRedisAdapter.incrementClick(componentId)
-            EventType.PAGE_VIEW -> statisticsRedisAdapter.incrementPageView(componentId)
-            EventType.SEARCH -> statisticsRedisAdapter.incrementSearch(componentId)
-            EventType.LIKE -> statisticsRedisAdapter.incrementLike(componentId, 1L) // postId는 임의로 설정
-            else -> Mono.empty()
-        }
+        val result = statisticsRedisAdapter.incrementEventCount(eventType, metadata)
 
         // then
         StepVerifier.create(result)
