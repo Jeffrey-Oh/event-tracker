@@ -5,4 +5,4 @@ WORKDIR /mnt/locust
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY ../locust1 .

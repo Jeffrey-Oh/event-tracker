@@ -4,10 +4,7 @@ import random
 
 semaphore = asyncio.Semaphore(200)
 
-hashtags_pool = [
-    "강아지", "고양이", "산책", "반려동물", "사료",
-    "장난감", "훈련", "입양", "목욕", "미용"
-]
+hashtags_pool = ["고양이", "강아지", "여행", "맛집", "일상", "운동", "독서", "음악", "코딩", "스터디"]
 
 async def create_post(session, post_id):
     user_id = random.randint(1, 100)
@@ -15,7 +12,7 @@ async def create_post(session, post_id):
 
     async with semaphore:
         try:
-            res = await session.post(
+            await session.post(
                 "http://127.0.0.1:8081/api/posts",
                 json={
                     "userId": user_id,
