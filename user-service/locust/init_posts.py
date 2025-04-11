@@ -13,7 +13,7 @@ async def create_post(session, post_id):
     async with semaphore:
         try:
             await session.post(
-                "http://127.0.0.1:8081/api/posts",
+                "http://host.docker.internal:8081/api/posts",
                 json={
                     "userId": user_id,
                     "content": f"test {post_id}",
