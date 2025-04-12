@@ -1,4 +1,6 @@
 plugins {
+    java
+
     // Kotlin 기본 플러그인
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25" apply false
@@ -18,6 +20,7 @@ allprojects {
 }
 
 subprojects {
+    apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
@@ -42,5 +45,15 @@ subprojects {
     // 공통 테스트 설정
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions.jvmTarget = "17"
     }
 }

@@ -22,7 +22,7 @@ class EventController(
     fun receiveEvent(
         @RequestBody @Valid request: SaveEventDTO.SaveEventRequest
     ): Mono<ResponseEntity<Void>> {
-        return return saveEventUseCase.saveEvent(request.toCommand())
+        return saveEventUseCase.saveEvent(request.toCommand())
             .thenReturn(ResponseEntity.status(HttpStatus.CREATED).build())
     }
 
