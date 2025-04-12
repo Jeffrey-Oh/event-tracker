@@ -1,6 +1,6 @@
 package com.jeffreyoh.userservice.port.`in`
 
-import com.jeffreyoh.userservice.core.domain.PostLikeCommand
+import com.jeffreyoh.userservice.core.command.PostLikeCommand
 import reactor.core.publisher.Mono
 
 interface TogglePostLikeUseCase {

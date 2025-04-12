@@ -1,6 +1,7 @@
 package com.jeffreyoh.userservice.application.service
 
-import com.jeffreyoh.userservice.core.domain.EventTrackerCommand
+import com.jeffreyoh.userservice.core.command.EventTrackerCommand
+import com.jeffreyoh.userservice.core.domain.EventType
 import com.jeffreyoh.userservice.core.domain.Post
 import com.jeffreyoh.userservice.port.`in`.SearchUseCase
 import com.jeffreyoh.userservice.port.out.EventTrackerPort
@@ -8,6 +9,7 @@ import com.jeffreyoh.userservice.port.out.PostSearchPort
 import com.jeffreyoh.userservice.port.out.ReadRedisPort
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.*
 
 class SearchService(
     private val eventTrackerPort: EventTrackerPort,
@@ -22,11 +24,17 @@ class SearchService(
         return postSearchPort.searchByKeyword(keyword)
             .collectList()
             .flatMap { posts ->
-                eventTrackerPort.sendSearchEvent(
-                    EventTrackerCommand.SearchCommand(
-                        eventType = EventTrackerCommand.EventType.SEARCH,
+                eventTrackerPort.sendEvent(
+                    EventTrackerCommand.SaveEventCommand(
+                        eventType = EventType.SEARCH,
                         userId = userId,
-                        keyword = keyword
+                        sessionId = UUID.randomUUID().toString(),
+                        metadata = EventTrackerCommand.EventMetadata(
+                            componentId = EventType.SEARCH.componentId,
+                            elementId = "elementId-$${EventType.SEARCH.groupId}",
+                            keyword = keyword,
+                            postId = null
+                        )
                     )
                 ).thenReturn(posts)
             }

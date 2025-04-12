@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.application.service
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
+import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.mockk.every
@@ -35,7 +35,7 @@ class GetStatisticsServiceTest {
         val expectedCount = 500L
 
         val eventTypeSlot = slot<EventType>()
-        val eventMetadataSlot = slot<EventMetadata>()
+        val eventMetadataSlot = slot<EventCommand.EventMetadata>()
 
         every {
             when(eventType) {

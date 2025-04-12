@@ -1,6 +1,6 @@
 package com.jeffreyoh.userservice.application.service
 
-import com.jeffreyoh.userservice.core.domain.PostCommand
+import com.jeffreyoh.userservice.core.command.PostCommand
 import com.jeffreyoh.userservice.port.`in`.CreatePostUseCase
 import com.jeffreyoh.userservice.port.out.PostCommandPort
 import reactor.core.publisher.Mono

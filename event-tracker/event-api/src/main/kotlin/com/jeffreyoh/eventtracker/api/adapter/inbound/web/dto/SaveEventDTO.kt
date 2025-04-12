@@ -2,7 +2,6 @@ package com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto
 
 import com.jeffreyoh.eventtracker.api.infrastructure.exception.ValidationException
 import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
-import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
@@ -43,7 +42,7 @@ class SaveEventDTO {
                 eventType,
                 userId,
                 sessionId,
-                EventMetadata(
+                EventCommand.EventMetadata(
                     metadata.componentId,
                     metadata.elementId,
                     metadata.keyword,
