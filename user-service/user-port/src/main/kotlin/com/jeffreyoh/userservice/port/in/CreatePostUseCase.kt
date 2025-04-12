@@ -1,6 +1,6 @@
 package com.jeffreyoh.userservice.port.`in`
 
-import com.jeffreyoh.userservice.core.domain.PostCommand
+import com.jeffreyoh.userservice.core.command.PostCommand
 import reactor.core.publisher.Mono
 
 interface CreatePostUseCase {

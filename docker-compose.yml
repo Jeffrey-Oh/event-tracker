@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16
@@ -22,6 +20,29 @@ services:
     volumes:
       - redisdata:/data
     restart: always
+
+  event-tracker:
+    image: event-tracker:latest
+    container_name: event_tracker
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  user-service:
+    image: user-service:latest
+    container_name: user_service
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EVENT_TRACKER_URL=http://event-tracker:8080
 
   event-locust:
     container_name: event_locust
@@ -46,20 +67,6 @@ services:
     working_dir: /mnt/locust
     command: >
       locust -f locustfile.py --host=http://host.docker.internal:8081 --web-port 8090
-
-  all-locust:
-    container_name: all_locust
-    build:
-      context: ./user-service/locust
-    ports:
-      - "8091:8091"
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile_all.py --web-port 8091
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
 volumes:
   pgdata:

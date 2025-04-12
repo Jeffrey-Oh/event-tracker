@@ -2,6 +2,7 @@ plugins {
     kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
+    id("com.google.cloud.tools.jib") version "3.4.5"
 }
 
 dependencies {
@@ -20,4 +21,17 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.9")
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("io.projectreactor:reactor-test")
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:17-jdk"
+    }
+    to {
+        image = "event-tracker:latest"
+    }
+    container {
+        ports = listOf("8080")
+        creationTime = "USE_CURRENT_TIMESTAMP"
+    }
 }

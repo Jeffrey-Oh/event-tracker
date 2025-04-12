@@ -2,7 +2,6 @@ package com.jeffreyoh.eventtracker.application.service
 
 import com.jeffreyoh.eventtracker.core.domain.event.Event
 import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
-import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
 import com.jeffreyoh.eventtracker.port.output.EventRedisPort
@@ -47,7 +46,7 @@ class SaveEventServiceTest {
             eventType = eventType,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventMetadata(
+            metadata = EventCommand.EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L,
@@ -57,7 +56,7 @@ class SaveEventServiceTest {
 
         val eventSlot = slot<Event>()
         val eventTypeSlot = slot<EventType>()
-        val eventMetadataSlot = slot<EventMetadata>()
+        val eventMetadataSlot = slot<EventCommand.EventMetadata>()
         val userIdSlot = slot<Long>()
         val keywordSlot = slot<String>()
 
@@ -132,7 +131,7 @@ class SaveEventServiceTest {
             eventType = EventType.LIKE,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventMetadata(
+            metadata = EventCommand.EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L,
@@ -177,7 +176,7 @@ class SaveEventServiceTest {
             eventType = EventType.LIKE,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventMetadata(
+            metadata = EventCommand.EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L,

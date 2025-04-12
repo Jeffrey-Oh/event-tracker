@@ -7,7 +7,7 @@ data class Event(
     val eventType: EventType,
     val userId: Long?,
     val sessionId: String,
-    val metadata: EventMetadata,
+    val metadata: EventCommand.EventMetadata,
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

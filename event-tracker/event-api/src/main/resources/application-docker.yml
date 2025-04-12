@@ -1,0 +1,23 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/event_db
+    username: event_user
+    password: event_pass
+
+  data:
+    redis:
+      host: event_redis
+      port: 6379
+
+  codec:
+    max-in-memory-size: 10MB
+
+  main:
+    web-application-type: reactive
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
+    org.springframework.data.redis: DEBUG

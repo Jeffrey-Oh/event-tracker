@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
+import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
 import com.jeffreyoh.eventtracker.core.domain.event.EventType
 import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.mockk.every
@@ -38,7 +38,7 @@ class StatisticsRedisAdapterTest {
         // given
         val componentId = 1000L
         val expectedCount = 500L
-        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val metadata = EventCommand.EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
@@ -60,7 +60,7 @@ class StatisticsRedisAdapterTest {
     fun `이벤트 LIKE를 제외한 타입별 Redis 키에 대해 카운트를 증가시킨다`(eventType: EventType) {
         // given
         val componentId = 1000L
-        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val metadata = EventCommand.EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
@@ -77,7 +77,7 @@ class StatisticsRedisAdapterTest {
     @Test
     fun `이벤트 LIKE Redis 키에 대해 카운트를 감소시킨다`() {
         // given
-        val componentId = 1000L
+        val componentId = EventType.LIKE.componentId
         val postId = 1L
         val keySlot = slot<List<String>>()
         val scriptSlot = slot<RedisScript<Long>>()
@@ -91,7 +91,7 @@ class StatisticsRedisAdapterTest {
         StepVerifier.create(result)
             .verifyComplete()
 
-        assertThat(keySlot.captured.first()).isEqualTo("statistics:like:component:$componentId:post:$postId")
+        assertThat(keySlot.captured.first()).isEqualTo("statistics:like:componentId:$componentId:postId:$postId")
         assertThat(scriptSlot.captured.scriptAsString).contains("redis.call('GET', KEYS[1])")
     }
 

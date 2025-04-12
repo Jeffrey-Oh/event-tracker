@@ -1,12 +1,14 @@
 package com.jeffreyoh.userservice.application.service
 
-import com.jeffreyoh.userservice.core.domain.EventTrackerCommand
-import com.jeffreyoh.userservice.core.domain.PostLike
-import com.jeffreyoh.userservice.core.domain.PostLikeCommand
+import com.jeffreyoh.userservice.core.command.EventTrackerCommand
+import com.jeffreyoh.userservice.core.command.EventTrackerCommand.EventMetadata
+import com.jeffreyoh.userservice.core.domain.EventType
+import com.jeffreyoh.userservice.core.command.PostLikeCommand
 import com.jeffreyoh.userservice.port.`in`.TogglePostLikeUseCase
 import com.jeffreyoh.userservice.port.out.EventTrackerPort
 import com.jeffreyoh.userservice.port.out.PostLikeCommandPort
 import reactor.core.publisher.Mono
+import java.util.UUID
 
 class TogglePostLikeService(
     private val postLikeCommandPort: PostLikeCommandPort,
@@ -19,10 +21,16 @@ class TogglePostLikeService(
             .switchIfEmpty(postLikeCommandPort.save(command.toPostLike()).thenReturn(true))
             .then(
                 eventTrackerPort.sendEvent(
-                    EventTrackerCommand.PayloadCommand(
-                        EventTrackerCommand.EventType.LIKE,
+                    EventTrackerCommand.SaveEventCommand(
+                        EventType.LIKE,
                         command.userId,
-                        command.postId
+                        UUID.randomUUID().toString(),
+                        EventMetadata(
+                            componentId = EventType.LIKE.componentId,
+                            elementId = "elementId-${EventType.LIKE.groupId}",
+                            keyword = null,
+                            postId = command.postId
+                        )
                     )
                 )
             )
