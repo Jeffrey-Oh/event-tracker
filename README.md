@@ -52,6 +52,18 @@ Spring WebFlux + Redis + PostgreSQL 기반의 고성능 사용자 이벤트 수�
 
 ---
 
+## 🐳 Docker 이미지 빌드 및 실행 방법 (with Jib)
+```
+# 1. 루트 프로젝트에서 Jib를 이용해 API 모듈 Docker 이미지 빌드
+$ ./gradlew jibDockerBuild
+
+# 2. Docker Compose로 컨테이너 실행
+$ docker compose up -d
+```
+>✅ event-tracker와 user-service의 각 api 모듈에 jib 설정이 정의되어 있으므로, 루트 디렉토리에서 한 번에 빌드 후 docker compose 실행해야 합니다.
+
+---
+
 ## 📊 성능 목표 (MVP 기준)
 
 | 항목                   | 목표                |
