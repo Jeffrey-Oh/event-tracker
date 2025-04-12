@@ -1,145 +1,122 @@
 # 🚀 Reactive Event Tracker
 
-**Spring WebFlux + Redis + PostgreSQL 기반의 고성능 사용자 이벤트 수집 시스템**
-
----
+Spring WebFlux + Redis + PostgreSQL 기반의 고성능 사용자 이벤트 수집 및 통계 시스템
 
 ## 📌 프로젝트 개요
 
-대규모 트래픽 환경에서 발생하는 **사용자 이벤트(클릭, 검색, 페이지뷰, 좋아요 등)** 를  
-**비동기/비차단 방식**으로 실시간 수집하고, Redis를 활용해 임시 저장 및 통계를 처리하며,  
-PostgreSQL로 필요한 데이터를 안정적으로 영속화하는 **MVP 수준 이벤트 트래커 백엔드 시스템**입니다.
+대규모 트래픽 환경에서 유저의 행동 이벤트(클릭, 검색, 페이지 이동, 좋아요 등)를 수집하고 Redis를 통해 실시간 통계 처리 후 PostgreSQL에 적재하는 백엔드 시스템입니다. 실시간성과 확장성을 고려한 아키텍처로, 이벤트 흐름과 통계를 안정적으로 관리합니다.
 
 ---
 
-## 🧱 주요 기술 스택
+## 🧱 기술 스택
 
-| 영역            | 기술                                       |
-|-----------------|--------------------------------------------|
-| Language        | Kotlin                                     |
-| Framework       | Spring Boot 3.x, Spring WebFlux            |
-| DB              | PostgreSQL 16 (R2DBC)                      |
-| Cache / Queue   | Redis 7.4 (Reactive)                       |
-| Build           | Gradle (Kotlin DSL, 멀티 모듈)             |
-| Logging         | KotlinLogging (oshai)                      |
-| Test            | Locust (부하 테스트), JUnit5 + mockk       |
-| Infra           | Docker, Docker Compose                     |
+| 영역       | 기술                                                   |
+|------------|--------------------------------------------------------|
+| Language   | Kotlin                                                 |
+| Framework  | Spring Boot 3.x (WebFlux)                              |
+| DB         | PostgreSQL 16 (R2DBC + JSONB + 파티셔닝)              |
+| Cache/Queue| Redis 7.4 (Reactive, Lua Script 활용)                  |
+| Build      | Gradle (Kotlin DSL, 멀티모듈)                          |
+| Test       | Locust (부하 테스트), JUnit5, MockK                    |
+| Infra      | Docker, Docker Compose                                 |
+| Logging    | KotlinLogging (oshai), SLF4J                           |
 
 ---
 
-## ⚙️ 아키텍처 구조
+## ⚙️ 아키텍처
 
 ```plaintext
-[Client] 
-   ↓ POST /api/events
-[Spring WebFlux API] 
+[Client]
    ↓
-[Redis (TTL + LPUSH + Key-based 구조)]
+[Spring WebFlux API] (/api/events, /api/posts/like 등)
    ↓
-[통계 처리 및 이벤트 저장 처리]
+[Redis] (임시 저장, TTL, Lua 기반 증분 처리)
    ↓
-[PostgreSQL (R2DBC + JSONB 저장)]
+[Scheduler or Kafka]
+   ↓
+[PostgreSQL] (R2DBC, JSONB, 통계 저장)
+   ↓
+[Statistics API] (/api/statistics 등)
 ```
 
 ---
 
-## 🎯 주요 기능 요약
+## 🎯 주요 기능
 
-- ✅ **이벤트 수집 API**: `/api/events`
-- ✅ **Redis 기반 TTL + 리스트 저장**  
-- ✅ **좋아요 상태 토글 → 이벤트 트래킹 로그화 (LIKE / UNLIKE)**
-- ✅ **통계 처리: 클릭, 페이지뷰, 검색, 좋아요 수**
-- ✅ **사용자별 최근 검색어 저장 (중복 제거 + TTL + LPUSH)**
-- ✅ **post_like 테이블과 연동된 정합성 보장 토글 처리**
-- ✅ **단일 유저 기반 부하 테스트 + Redis 통계 정확성 검증**
-
----
-
-## 📊 MVP 성능 목표
-
-| 항목                    | 목표 수치              |
-|-------------------------|------------------------|
-| 초당 이벤트 처리량       | 500 ~ 1000+ EPS        |
-| API 평균 응답 속도       | 50 ~ 100ms 이하        |
-| 부하 테스트 도구         | Locust                 |
-| 처리 이벤트 종류         | CLICK / PAGE_VIEW / SEARCH / LIKE / UNLIKE |
+- 모든 사용자 이벤트 수집 API 지원 (CLICK, PAGE_VIEW, SEARCH, LIKE 등)
+- Redis를 통한 빠른 TTL 기반 임시 저장 및 통계 카운팅
+- Redis 통계 데이터를 주기적으로 PostgreSQL로 저장 (Lua Script 활용)
+- 최근 검색어 Redis 리스트 저장 및 중복 제거
+- 통계 데이터 조회 API 제공
+- 추후 Kafka 및 ELK, Prometheus 도입 준비
 
 ---
 
-## 🧪 부하 테스트 시나리오
+## 📊 성능 목표 (MVP 기준)
 
-- `Locust` 기반 사용자 시뮬레이션
-  - 유저 수: 100, 300, 500명
-  - 증가 속도: 초당 10, 30, 50명
-  - 시나리오:
-    - 좋아요 토글 (post_like + 트래커 기록)
-    - 검색 → 트래커 기록 → 최근 검색어 저장
-    - 클릭 / 페이지뷰 등 이벤트 트래킹
+| 항목                   | 목표                |
+|------------------------|---------------------|
+| 초당 이벤트 처리량     | 1,000 EPS 이상       |
+| 전체 테스트 이벤트 수  | 100만 건 이상        |
+| 통계 API 응답 시간     | 평균 100ms 이하      |
 
 ---
 
-## 📂 모듈 구조
+## 🧪 테스트 시나리오
+
+- [x] 게시물 좋아요 / 좋아요 취소
+- [x] 게시물 조회 (Page View)
+- [x] 클릭 이벤트
+- [x] 검색 이벤트
+- [x] 최근 검색어 중복 제거 및 TTL 유지
+- [x] Redis → PostgreSQL 통계 저장
+- [x] Lua 기반 증분 처리 + 스냅샷 키 분리 저장
+- [x] 전체 Locust 시나리오 실행 (최대 사용자 수: 500명, 게시물: 100건 기준)
+
+---
+
+## 📁 주요 디렉토리 구조
 
 ```plaintext
 event-tracker/
- ┣ core/               # 도메인 및 유틸 정의
- ┣ api/                # WebFlux Controller
- ┣ application/        # UseCase, Service 정의
- ┣ port/               # 헥사고날 아키텍처 Port 정의
- ┣ storage/            # Redis, PostgreSQL 어댑터
- ┣ statistics/         # 통계 전용 모듈
- ┣ locust/             # 테스트 시나리오 코드
- ┣ docker-compose.yml
- ┗ README.md
+  ┣ api/             # WebFlux API (컨트롤러, 요청/응답 DTO)
+  ┣ application/     # UseCase, Service, 비즈니스 로직
+  ┣ core/            # 도메인, Command, 공통 클래스
+  ┣ port/            # Port 인터페이스 (입력/출력)
+  ┣ storage/         # Redis, PostgreSQL 접근 어댑터
+  ┗ locust/          # Locust 시나리오 스크립트
 ```
 
 ---
 
-## 📦 Redis 활용 방식
+## 🔄 향후 확장 계획
 
-- 이벤트 TTL 관리
-  - CLICK / PAGE_VIEW / SEARCH 이벤트는 10분 TTL
-  - LIKE / UNLIKE 이벤트는 TTL 없음 (트래킹 목적)
-- 사용자 최근 검색어
-  - LPUSH + LTRIM(10개 유지) + Key TTL(1시간)
-  - 중복 제거: LREM으로 기존 키워드 제거 후 저장
-
----
-
-## 📁 PostgreSQL 구조
-
-- 이벤트 트래킹이 아닌, 상태 추적을 위한 데이터 정합성용 테이블 존재
-- post_like, post, event_statistics 테이블 정의
-- JSONB 필드를 통한 유연한 이벤트 저장 확장 가능
+- Kafka 기반 이벤트 처리 구조 전환 (Redis → Kafka → Consumer)
+- Elasticsearch + Kibana 도입하여 검색 인덱스 최적화 및 시각화
+- Prometheus + Grafana → 실시간 성능 모니터링 대시보드 구축
+- 이벤트 유형 다양화 (스크롤, 댓글, 공유 등)
+- 대규모 트래픽 (200만 게시물 기준) 성능 테스트
 
 ---
 
-## 🚀 향후 확장 계획
+## 📈 200만 건 데이터 테스트 계획
 
-| 항목                        | 설명 |
-|-----------------------------|------|
-| Kafka 도입                   | Redis → Kafka 교체 및 Consumer 처리 |
-| PostgreSQL 배치 통계 집계    | Redis 데이터 → DB 주기적 적재 |
-| ELK 연동                    | Kibana 시각화 기반 모니터링 구축 |
-| Prometheus + Grafana        | 실시간 시스템 성능 대시보드 구성 |
-| 사용자 세션 흐름 저장       | 행동 분석 기반 추천 알고리즘 확장 |
+### 테스트 구성
 
----
+| 항목       | 수치              |
+|------------|-------------------|
+| 게시물 수   | 최대 2,000,000건   |
+| 사용자 수   | 최대 100,000명     |
+| 테스트 시간 | 10~30분 지속 부하 |
+| TPS 목표    | 1,000 EPS 이상     |
 
-## ✅ 완료된 테스트 및 보장 항목
+### 데이터 준비 방법
 
-- 이벤트 저장 로직 단위 테스트
-- Redis 트래킹 테스트 및 TTL 검증
-- 좋아요 중복 방지 테스트 (ON CONFLICT DO NOTHING + 트래킹)
-- 최근 검색어 10개 제한 + 중복 제거 확인
-- 부하 테스트 100~500명 기준 안정성 검증
-- 트래커 전송 API 비동기 병렬 처리 확인
+1. **초기 데이터 삽입 스크립트 작성 (게시물)**
+  - 게시물: content + imageUrl + hashtags 조합 자동화
 
----
+2. **postgreSQL** 프로시저 사용
 
-## 🔍 기타
 
-- 모듈 내 모든 의존성은 명확하게 분리 (core ↔ adapter)
-- 헥사고날 아키텍처 기반
-- 모든 모듈 WebFlux 대응
-- 비동기 테스트는 단위 중심, 통합 테스트는 Locust로 대체
+3. **성능별 단계적 증가**
+  - 10만건 → 50만건 → 100만건 → 200만건 순차 삽입
