@@ -24,6 +24,8 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.9")
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("io.projectreactor:reactor-test")
+
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.109.Final:osx-aarch_64")
 }
 
 val os = OperatingSystem.current()

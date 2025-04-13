@@ -91,7 +91,7 @@ class StatisticsRedisAdapterTest {
         StepVerifier.create(result)
             .verifyComplete()
 
-        assertThat(keySlot.captured.first()).isEqualTo("statistics:like:componentId:$componentId:postId:$postId")
+        assertThat(keySlot.captured.first()).isEqualTo("statistics:like:component:$componentId:post:$postId")
         assertThat(scriptSlot.captured.scriptAsString).contains("redis.call('GET', KEYS[1])")
     }
 

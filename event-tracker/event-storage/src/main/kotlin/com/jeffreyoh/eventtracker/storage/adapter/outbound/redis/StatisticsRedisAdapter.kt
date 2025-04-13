@@ -33,10 +33,10 @@ class StatisticsRedisAdapter(
 
     private fun buildKey(eventType: EventType, metadata: EventCommand.EventMetadata): String {
         return when (eventType) {
-            EventType.CLICK -> "statistics:${eventType.name}:componentId:${eventType.componentId}"
-            EventType.PAGE_VIEW -> "statistics:${eventType.name}:componentId:${eventType.componentId}"
-            EventType.SEARCH -> "statistics:${eventType.name}:componentId:${eventType.componentId}:keyword:${metadata.keyword}"
-            else -> "statistics:${EventType.LIKE.name.lowercase()}:componentId:${eventType.componentId}:postId:${metadata.postId}"
+            EventType.CLICK -> "statistics:${eventType.name}:component:${eventType.componentId}"
+            EventType.PAGE_VIEW -> "statistics:${eventType.name}:component:${eventType.componentId}"
+            EventType.SEARCH -> "statistics:${eventType.name}:component:${eventType.componentId}:keyword:${metadata.keyword}"
+            else -> "statistics:${EventType.LIKE.name.lowercase()}:component:${eventType.componentId}:post:${metadata.postId}"
         }
     }
 

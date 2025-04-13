@@ -140,14 +140,12 @@ class SaveEventServiceTest {
         )
 
         val eventSlot = slot<Event>()
-        val keySlot = slot<String>()
         val componentIdSlot = slot<Long>()
         val postIdSlot = slot<Long>()
 
         val event = command.toEvent()
 
-        every { eventRedisPort.readLikeFromRedisKey(capture(keySlot)) } returns Mono.empty()
-        every { eventRedisPort.saveLikeEventToRedis(capture(keySlot), capture(eventSlot)) } returns Mono.empty()
+        every { eventRedisPort.saveToRedis(capture(eventSlot)) } returns Mono.empty()
         every { statisticsRedisPort.incrementLike(capture(componentIdSlot), capture(postIdSlot)) } returns Mono.empty()
 
         // when
@@ -163,8 +161,7 @@ class SaveEventServiceTest {
             .isEqualTo(event)
 
         verify(exactly = 1) {
-            eventRedisPort.readLikeFromRedisKey(capture(keySlot))
-            eventRedisPort.saveLikeEventToRedis(capture(keySlot), capture(eventSlot))
+            eventRedisPort.saveToRedis(capture(eventSlot))
             statisticsRedisPort.incrementLike(capture(componentIdSlot), capture(postIdSlot))
         }
     }
@@ -173,7 +170,7 @@ class SaveEventServiceTest {
     fun `LIKE 이벤트 - 캐시에 이미 있으면 삭제한다`() {
         // given
         val command = EventCommand.SaveEventCommand(
-            eventType = EventType.LIKE,
+            eventType = EventType.UNLIKE,
             userId = 1L,
             sessionId = "session-123",
             metadata = EventCommand.EventMetadata(
@@ -184,12 +181,11 @@ class SaveEventServiceTest {
             )
         )
 
-        val keySlot = slot<String>()
+        val eventSlot = slot<Event>()
         val componentIdSlot = slot<Long>()
         val postIdSlot = slot<Long>()
 
-        every { eventRedisPort.readLikeFromRedisKey(capture(keySlot)) } returns Mono.just("cached")
-        every { eventRedisPort.deleteFromRedisKey(capture(keySlot)) } returns Mono.empty()
+        every { eventRedisPort.saveToRedis(capture(eventSlot)) } returns Mono.empty()
         every { statisticsRedisPort.decrementLike(capture(componentIdSlot), capture(postIdSlot)) } returns Mono.empty()
 
         // when
@@ -200,8 +196,7 @@ class SaveEventServiceTest {
             .verifyComplete()
 
         verify(exactly = 1) {
-            eventRedisPort.readLikeFromRedisKey(capture(keySlot))
-            eventRedisPort.deleteFromRedisKey(capture(keySlot))
+            eventRedisPort.saveToRedis(capture(eventSlot))
             statisticsRedisPort.decrementLike(capture(componentIdSlot), capture(postIdSlot))
         }
     }

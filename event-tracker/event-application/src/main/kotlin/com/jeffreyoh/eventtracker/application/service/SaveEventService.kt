@@ -17,45 +17,24 @@ class SaveEventService(
     private val recentSearchRedisPort: RecentSearchRedisPort
 ): SaveEventUseCase {
 
-    private fun keyPostLike(userId: Long, postId: Long): String
-        = "events:${EventType.LIKE.name.lowercase()}:user:$userId:post:$postId"
-
     override fun saveEvent(command: EventCommand.SaveEventCommand): Mono<Void> {
         log.debug { "UseCase handle called: $command" }
         val event = command.toEvent()
 
-        return if (event.eventType == EventType.LIKE) {
-            val key = keyPostLike(command.userId!!, command.metadata.postId!!)
-
-            eventRedisPort.readLikeFromRedisKey(key)
-                .defaultIfEmpty("MISSING")
-                .flatMap { cachedEvent ->
-                    if (cachedEvent == "MISSING") {
-                        val likeEvent = event.copy(eventType = EventType.LIKE)
-                        log.info { "LIKE 이벤트 저장" }
-                        eventRedisPort.saveLikeEventToRedis(key, likeEvent)
-                            .then(statisticsRedisPort.incrementLike(likeEvent.metadata.componentId, likeEvent.metadata.postId!!))
-                    } else {
-                        val unLikeEvent = event.copy(eventType = EventType.UNLIKE)
-                        log.info { "UNLIKE 이벤트 저장" }
-                        eventRedisPort.deleteFromRedisKey(key)
-                            .then(statisticsRedisPort.decrementLike(unLikeEvent.metadata.componentId, unLikeEvent.metadata.postId!!))
+        return eventRedisPort.saveToRedis(event)
+            .then(
+                when(event.eventType) {
+                    EventType.CLICK -> statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
+                    EventType.PAGE_VIEW -> statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
+                    EventType.SEARCH -> {
+                        statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
+                            .then(recentSearchRedisPort.saveRecentKeyword(event.userId!!, event.metadata.keyword!!))
                     }
+                    EventType.LIKE -> statisticsRedisPort.incrementLike(event.metadata.componentId, event.metadata.postId!!)
+                    EventType.UNLIKE -> statisticsRedisPort.decrementLike(event.metadata.componentId, event.metadata.postId!!)
+                    else -> Mono.empty()
                 }
-        } else {
-            eventRedisPort.saveToRedis(event)
-                .then(
-                    when(event.eventType) {
-                        EventType.CLICK -> statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
-                        EventType.PAGE_VIEW -> statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
-                        EventType.SEARCH -> {
-                            statisticsRedisPort.incrementEventCount(event.eventType, event.metadata)
-                                .then(recentSearchRedisPort.saveRecentKeyword(event.userId!!, event.metadata.keyword!!))
-                        }
-                        else -> Mono.empty()
-                    }
-                )
-        }
+            )
     }
 
 }

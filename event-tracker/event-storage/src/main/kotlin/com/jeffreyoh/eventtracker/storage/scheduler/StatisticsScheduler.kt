@@ -30,7 +30,7 @@ class StatisticsScheduler(
                         if (count == 0L) {
                             return@flatMap Mono.empty()
                         } else {
-                            val parts = key.split(":") // statistics:like:componentId:1000:postId:5
+                            val parts = key.split(":") // statistics:like:component:1000:post:5
                             if (parts.size < 2) return@flatMap Mono.empty()
 
                             val eventType = parts[1].uppercase()

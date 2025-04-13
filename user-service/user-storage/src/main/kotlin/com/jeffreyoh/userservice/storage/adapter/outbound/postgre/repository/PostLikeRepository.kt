@@ -7,6 +7,6 @@ import reactor.core.publisher.Mono
 interface PostLikeRepository : ReactiveCrudRepository<PostLikeEntity, Long> {
 
     fun findByUserIdAndPostId(userId: Long, postId: Long): Mono<PostLikeEntity>
-    fun deleteByPostLikeId(postLikeId: Long): Mono<Void>
+    fun deleteByUserIdAndPostId(userId: Long, postId: Long): Mono<Void>
 
 }

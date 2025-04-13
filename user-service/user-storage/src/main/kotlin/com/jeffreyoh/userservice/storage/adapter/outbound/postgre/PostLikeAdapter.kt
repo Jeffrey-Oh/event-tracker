@@ -42,8 +42,8 @@ class PostLikeAdapter(
             }
     }
 
-    override fun delete(postLikeId: Long): Mono<Void> {
-        return postLikeRepository.deleteByPostLikeId(postLikeId)
+    override fun delete(userId: Long, postId: Long): Mono<Void> {
+        return postLikeRepository.deleteByUserIdAndPostId(userId, postId)
     }
 
 

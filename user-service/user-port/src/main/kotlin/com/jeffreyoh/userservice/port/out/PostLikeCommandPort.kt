@@ -7,6 +7,6 @@ interface PostLikeCommandPort {
 
     fun findByUserIdAndPostId(userId: Long, postId: Long): Mono<PostLike>
     fun save(postLike: PostLike): Mono<PostLike>
-    fun delete(postLikeId: Long): Mono<Void>
+    fun delete(userId: Long, postId: Long): Mono<Void>
 
 }

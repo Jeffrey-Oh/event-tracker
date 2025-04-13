@@ -22,11 +22,15 @@ class UserServiceConfig {
     @Bean
     fun togglePostLikeUseCase(
         postLikeCommandPort: PostLikeCommandPort,
-        eventTrackerPort: EventTrackerPort
+        eventTrackerPort: EventTrackerPort,
+        readRedisPort: ReadRedisPort,
+        commandRedisPort: CommandRedisPort
     ) : TogglePostLikeUseCase =
         TogglePostLikeService(
             postLikeCommandPort,
-            eventTrackerPort
+            eventTrackerPort,
+            readRedisPort,
+            commandRedisPort
         )
 
     @Bean
