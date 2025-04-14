@@ -1,9 +1,10 @@
 package com.jeffreyoh.eventtracker.application.service
 
 import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.model.statistics.StatisticsCommand
+import com.jeffreyoh.eventtracker.application.model.statistics.GetStatisticsRedisQuery
 import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
 import com.jeffreyoh.eventtracker.application.service.statistics.GetStatisticsService
-import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -32,27 +33,21 @@ class GetStatisticsServiceTest {
     @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
     fun `이벤트 통계를 조회한다`(eventType: EventType) {
         // given
-        val componentId = 1000L
         val expectedCount = 500L
 
-        val eventTypeSlot = slot<EventType>()
-        val eventMetadataSlot = slot<EventMetadata>()
+        val querySlot = slot<GetStatisticsRedisQuery>()
 
-        every {
-            when(eventType) {
-                EventType.CLICK -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
-                EventType.PAGE_VIEW -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
-                EventType.SEARCH -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
-                EventType.LIKE -> statisticsRedisPort.getEventCount(EventType.LIKE, capture(eventMetadataSlot))
-                else -> Mono.empty()
-            }
-        } returns Mono.just(expectedCount)
+        every { statisticsRedisPort.getEventCount(capture(querySlot)) } returns Mono.just(expectedCount)
 
         // when
-        val result = when(eventType) {
-            EventType.LIKE -> getStatisticsService.getLikeCount(componentId, 1L) // postId는 임의로 설정
-            else -> getStatisticsService.getCount(componentId, eventType)
-        }
+        val result = getStatisticsService.getCount(
+            StatisticsCommand.GetStatistics(
+                eventType = eventType,
+                componentId = eventType.componentId,
+                keyword = null,
+                postId = null,
+            )
+        )
 
         // then
         StepVerifier.create(result)
@@ -61,15 +56,7 @@ class GetStatisticsServiceTest {
             }
             .verifyComplete()
 
-        verify(exactly = 1) {
-            when(eventType) {
-                EventType.CLICK -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
-                EventType.PAGE_VIEW -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
-                EventType.SEARCH -> statisticsRedisPort.getEventCount(capture(eventTypeSlot), capture(eventMetadataSlot))
-                EventType.LIKE -> statisticsRedisPort.getEventCount(EventType.LIKE, capture(eventMetadataSlot))
-                else -> Mono.empty()
-            }
-        }
+        verify(exactly = 1) { statisticsRedisPort.getEventCount(querySlot.captured) }
     }
 
 }

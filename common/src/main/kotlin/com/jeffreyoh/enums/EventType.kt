@@ -37,3 +37,7 @@ enum class EventType(
         componentId = 1003L
     ),
 }
+
+fun String.toEventTypeOrThrow(): EventType =
+    runCatching { EventType.valueOf(this.uppercase()) }
+        .getOrElse { throw IllegalArgumentException("Invalid event type: $this") }

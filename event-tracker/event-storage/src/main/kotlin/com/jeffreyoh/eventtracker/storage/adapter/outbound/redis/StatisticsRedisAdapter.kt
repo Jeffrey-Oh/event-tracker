@@ -2,6 +2,7 @@ package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
 import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.application.model.event.EventRedisQuery
+import com.jeffreyoh.eventtracker.application.model.statistics.GetStatisticsRedisQuery
 import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
 import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import org.springframework.data.redis.core.ReactiveRedisTemplate
@@ -27,17 +28,25 @@ class StatisticsRedisAdapter(
             .then()
     }
 
-    override fun getEventCount(eventType: EventType, metadata: EventMetadata): Mono<Long> {
-        val key = buildKey(eventType, metadata)
+    override fun getEventCount(query: GetStatisticsRedisQuery): Mono<Long> {
+        val key = buildKey(
+            query.eventType,
+            EventMetadata(
+                componentId = query.componentId,
+                postId = query.postId,
+                keyword = query.keyword
+            )
+        )
         return redisTemplate.opsForValue().get(key).map { it.toLong() }.defaultIfEmpty(0L)
     }
 
     private fun buildKey(eventType: EventType, metadata: EventMetadata): String {
+        val key = "statistics:${eventType.name.lowercase()}:component:${metadata.componentId}"
         return when (eventType) {
-            EventType.CLICK -> "statistics:${eventType.name}:component:${eventType.componentId}"
-            EventType.PAGE_VIEW -> "statistics:${eventType.name}:component:${eventType.componentId}"
-            EventType.SEARCH -> "statistics:${eventType.name}:component:${eventType.componentId}:keyword:${metadata.keyword}"
-            else -> "statistics:${EventType.LIKE.name.lowercase()}:component:${eventType.componentId}:post:${metadata.postId}"
+            EventType.SEARCH -> "$key:keyword:${metadata.keyword}"
+            EventType.LIKE, EventType.UNLIKE ->
+                "statistics:${EventType.LIKE.name.lowercase()}:component:${metadata.componentId}:post:${metadata.postId}"
+            else -> key
         }
     }
 
@@ -45,7 +54,7 @@ class StatisticsRedisAdapter(
         componentId: Long,
         postId: Long
     ): Mono<Void> {
-        val key = buildKey(EventType.UNLIKE, EventMetadata(componentId = componentId, postId = postId))
+        val key = buildKey(EventType.UNLIKE, EventMetadata(componentId = EventType.UNLIKE.componentId, postId = postId))
         val luaScript = RedisScript.of(
             """
             local current = redis.call('GET', KEYS[1])

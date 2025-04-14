@@ -10,7 +10,7 @@ data class EventRedisQuery(
     val metadata: EventMetadata,
 ) {
     companion object {
-        fun fromQuery(command: EventCommand.SaveEvent): EventRedisQuery {
+        fun toQuery(command: EventCommand.SaveEvent): EventRedisQuery {
             return EventRedisQuery(
                 command.eventType,
                 command.userId,
