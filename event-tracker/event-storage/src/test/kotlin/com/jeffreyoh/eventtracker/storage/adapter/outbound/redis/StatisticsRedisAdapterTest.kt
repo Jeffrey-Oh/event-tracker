@@ -16,18 +16,23 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.data.redis.core.ReactiveValueOperations
+import org.springframework.data.redis.core.ReactiveZSetOperations
 import org.springframework.data.redis.core.script.RedisScript
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @ExtendWith(MockKExtension::class)
 class StatisticsRedisAdapterTest {
 
-    @MockK private lateinit var redisTemplate: ReactiveRedisTemplate<String, Long>
-    @MockK private lateinit var valueOps: ReactiveValueOperations<String, Long>
+    @MockK private lateinit var redisTemplate: ReactiveStringRedisTemplate
+    @MockK private lateinit var valueOps: ReactiveValueOperations<String, String>
+    @MockK private lateinit var valueZSetOps: ReactiveZSetOperations<String, String>
     private lateinit var statisticsRedisAdapter: StatisticsRedisAdapter
 
     @BeforeEach
@@ -43,7 +48,9 @@ class StatisticsRedisAdapterTest {
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
-        every { valueOps.get(capture(redisKeySlot)) } returns Mono.just(expectedCount)
+        every {
+            valueOps.get(capture(redisKeySlot))
+        } returns Mono.just(expectedCount.toString())
 
         // when
         val result = statisticsRedisAdapter.getEventCount(
@@ -69,6 +76,11 @@ class StatisticsRedisAdapterTest {
     @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
     fun `이벤트 타입별 Redis 키에 대해 카운트를 증가 또는 감소시킨다`(eventType: EventType) {
         // given
+        val zsetKeySlot = slot<String>()
+        val memberSlot = slot<String>()
+        val deltaSlot = slot<Double>()
+        val durationSlot = slot<Duration>()
+
         val command = EventCommand.SaveEvent(
             eventType = eventType,
             userId = 1L,
@@ -79,10 +91,10 @@ class StatisticsRedisAdapterTest {
                 keyword = "keyword",
             )
         )
-        val redisKeySlot = slot<String>()
 
-        every { redisTemplate.opsForValue() } returns valueOps
-        every { valueOps.increment(capture(redisKeySlot)) } returns Mono.empty()
+        every { redisTemplate.opsForZSet() } returns valueZSetOps
+        every { valueZSetOps.incrementScore(capture(zsetKeySlot), capture(memberSlot), capture(deltaSlot)) } returns Mono.empty()
+        every { redisTemplate.expire(capture(zsetKeySlot), capture(durationSlot)) } returns Mono.empty()
 
         // when
         val result = statisticsRedisAdapter.saveEventCount(EventRedisQuery.toQuery(command))
@@ -95,22 +107,26 @@ class StatisticsRedisAdapterTest {
     @Test
     fun `이벤트 LIKE Redis 키에 대해 카운트를 감소시킨다`() {
         // given
-        val componentId = EventType.UNLIKE.componentId
-        val postId = 1L
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
+        val zsetKey = "statistics:like:$timestamp"
+        val member = "component:1003:post:1"
+
         val keySlot = slot<List<String>>()
+        val memberSlot = slot<List<String>>()
         val scriptSlot = slot<RedisScript<Long>>()
 
-        every { redisTemplate.execute(capture(scriptSlot), capture(keySlot)) } returns Flux.just(1L)
+        every { redisTemplate.execute(capture(scriptSlot), capture(keySlot), capture(memberSlot)) } returns Flux.just(1L)
 
         // when
-        val result = statisticsRedisAdapter.decrementLike(componentId, postId)
+        val result = statisticsRedisAdapter.decrementLike(zsetKey, member)
 
         // then
         StepVerifier.create(result)
             .verifyComplete()
 
-        assertThat(keySlot.captured.first()).isEqualTo("statistics:like:component:$componentId:post:$postId")
-        assertThat(scriptSlot.captured.scriptAsString).contains("redis.call('GET', KEYS[1])")
+        assertThat(keySlot.captured.first()).isEqualTo(zsetKey)
+        assertThat(memberSlot.captured.first()).isEqualTo(member)
+        assertThat(scriptSlot.captured.scriptAsString).contains("redis.call('ZSCORE', KEYS[1], ARGV[1])")
     }
 
 }
