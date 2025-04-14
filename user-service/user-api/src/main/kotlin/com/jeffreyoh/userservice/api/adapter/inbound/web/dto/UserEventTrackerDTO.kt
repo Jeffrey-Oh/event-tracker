@@ -1,6 +1,7 @@
 package com.jeffreyoh.userservice.api.adapter.inbound.web.dto
 
 import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.enums.toEventTypeOrThrow
 import com.jeffreyoh.userservice.api.infrastructure.exception.ValidationException
 import com.jeffreyoh.userservice.application.model.event.EventTrackerCommand
 import com.jeffreyoh.userservice.core.domain.event.EventMetadata
@@ -25,7 +26,8 @@ class UserEventTrackerDTO {
         val metadata: EventMetadataRequest,
     ) {
         fun toCommand(): EventTrackerCommand.SaveEvent {
-            val eventType = eventType.toEventTypeOrThrow()
+            val eventType = runCatching { eventType.toEventTypeOrThrow() }
+                .getOrElse { throw ValidationException(HttpStatus.BAD_REQUEST, "Invalid event type: $eventType") }
 
             if (eventType == EventType.LIKE && userId == null) {
                 throw ValidationException(HttpStatus.BAD_REQUEST, "userId is required for eventType: $eventType")
@@ -33,6 +35,10 @@ class UserEventTrackerDTO {
 
             if (eventType == EventType.LIKE && metadata.postId == null) {
                 throw ValidationException(HttpStatus.BAD_REQUEST, "metadata.postId is required for eventType: $eventType")
+            }
+
+            if (eventType == EventType.SEARCH && metadata.keyword.isNullOrBlank()) {
+                throw ValidationException(HttpStatus.BAD_REQUEST, "metadata.keyword is required for eventType: $eventType")
             }
 
             if (metadata.elementId?.isBlank() == true) {
@@ -61,8 +67,3 @@ class UserEventTrackerDTO {
     )
 
 }
-
-// 확장 함수
-fun String.toEventTypeOrThrow(): EventType =
-    runCatching { EventType.valueOf(this.uppercase()) }
-        .getOrElse { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid eventType: $this") }

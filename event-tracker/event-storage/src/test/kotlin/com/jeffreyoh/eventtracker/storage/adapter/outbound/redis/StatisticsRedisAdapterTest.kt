@@ -3,11 +3,13 @@ package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.application.model.event.EventCommand
 import com.jeffreyoh.eventtracker.application.model.event.EventRedisQuery
+import com.jeffreyoh.eventtracker.application.model.statistics.GetStatisticsRedisQuery
 import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,16 +39,21 @@ class StatisticsRedisAdapterTest {
     @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
     fun `이벤트 타입별 Redis 키에서 카운트를 조회한다`(eventType: EventType) {
         // given
-        val componentId = 1000L
         val expectedCount = 500L
-        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.get(capture(redisKeySlot)) } returns Mono.just(expectedCount)
 
         // when
-        val result = statisticsRedisAdapter.getEventCount(eventType, metadata)
+        val result = statisticsRedisAdapter.getEventCount(
+            GetStatisticsRedisQuery(
+                eventType = eventType,
+                componentId = eventType.componentId,
+                keyword = "keyword",
+                postId = 1L,
+            )
+        )
 
         // then
         StepVerifier.create(result)
@@ -54,6 +61,8 @@ class StatisticsRedisAdapterTest {
                 assertThat(it).isEqualTo(expectedCount)
             }
             .verifyComplete()
+
+        verify(exactly = 1) { valueOps.get(redisKeySlot.captured) }
     }
 
     @ParameterizedTest
@@ -76,7 +85,7 @@ class StatisticsRedisAdapterTest {
         every { valueOps.increment(capture(redisKeySlot)) } returns Mono.empty()
 
         // when
-        val result = statisticsRedisAdapter.saveEventCount(EventRedisQuery.fromQuery(command))
+        val result = statisticsRedisAdapter.saveEventCount(EventRedisQuery.toQuery(command))
 
         // then
         StepVerifier.create(result)

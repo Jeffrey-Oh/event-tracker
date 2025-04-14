@@ -2,6 +2,7 @@ package com.jeffreyoh.eventtracker.api.adapter.inbound.web.controller
 
 import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.EventStatisticsDTO
+import com.jeffreyoh.eventtracker.application.model.statistics.StatisticsCommand
 import com.jeffreyoh.eventtracker.application.port.`in`.GetEventStatisticsUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -27,52 +28,66 @@ class StatisticsControllerTest {
     @EnumSource(EventType::class)
     fun `정상적인 통계 조회 요청은 200 OK와 통계 결과를 반환한다`(eventType: EventType) {
         // given
-        val componentId = 1000L
         val expectedResult = 100L
-
-        given(
-            if (eventType == EventType.LIKE)statisticsUseCase.getLikeCount(componentId, 1L) // postId는 임의로 설정
-            else statisticsUseCase.getCount(componentId, eventType)
+        val command = StatisticsCommand.GetStatistics(
+            eventType = eventType,
+            componentId = eventType.componentId,
+            keyword = "keyword",
+            postId = 1L,
         )
-            .willReturn(Mono.just(100L))
+
+        given(statisticsUseCase.getCount(command)).willReturn(Mono.just(expectedResult))
 
         // when
-        var uri = "/api/statistics/${eventType}/$componentId"
-        if (eventType == EventType.LIKE) uri = "/api/statistics/like/$componentId/1" // postId는 임의로 설정
         val response = webTestClient.get()
-            .uri(uri)
+            .uri { uriBuilder ->
+                uriBuilder
+                    .path("/api/statistics")
+                    .queryParam("eventType", eventType.name)
+                    .queryParam("componentId", eventType.componentId)
+                    .queryParam("keyword", "keyword")
+                    .queryParam("postId", 1L)
+                    .build()
+            }
             .exchange()
 
         // then
         response.expectStatus().isOk
             .expectBody(EventStatisticsDTO.EventStatisticsResponse::class.java)
-            .consumeWith {
-                assertEquals(componentId, it.responseBody!!.componentId)
-                assertEquals(expectedResult, it.responseBody!!.count)
-            }
+            .consumeWith { assertEquals(expectedResult, it.responseBody!!.count) }
     }
 
     @Test
     fun `존재하지 않는 통계 요청은 count 0으로 응답한다`() {
         // given
-        val componentId = 9999L
         val eventType = EventType.CLICK
+        val componentId = 9999L
+        val command = StatisticsCommand.GetStatistics(
+            eventType = eventType,
+            componentId = eventType.componentId,
+            keyword = "keyword",
+            postId = 1L,
+        )
 
-        given(statisticsUseCase.getCount(componentId, eventType))
-            .willReturn(Mono.just(0L))
+        given(statisticsUseCase.getCount(command)).willReturn(Mono.just(0L))
 
         // when
         val response = webTestClient.get()
-            .uri("/api/statistics/${eventType}/$componentId")
+            .uri { uriBuilder ->
+                uriBuilder
+                    .path("/api/statistics")
+                    .queryParam("eventType", eventType.name)
+                    .queryParam("componentId", eventType.componentId)
+                    .queryParam("keyword", "keyword")
+                    .queryParam("postId", 1L)
+                    .build()
+            }
             .exchange()
 
         // then
         response.expectStatus().isOk
             .expectBody(EventStatisticsDTO.EventStatisticsResponse::class.java)
-            .consumeWith {
-                assertEquals(componentId, it.responseBody!!.componentId)
-                assertEquals(0L, it.responseBody!!.count)
-            }
+            .consumeWith { assertEquals(0L, it.responseBody!!.count) }
     }
 
 }

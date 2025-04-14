@@ -14,7 +14,7 @@ class SaveEventService(
 
     override fun saveEvent(command: EventCommand.SaveEvent): Mono<Void> {
         return eventRedisPort.saveToRedis(command.toEvent())
-            .then(statisticsRedisPort.saveEventCount(EventRedisQuery.fromQuery(command)))
+            .then(statisticsRedisPort.saveEventCount(EventRedisQuery.toQuery(command)))
     }
 
 }

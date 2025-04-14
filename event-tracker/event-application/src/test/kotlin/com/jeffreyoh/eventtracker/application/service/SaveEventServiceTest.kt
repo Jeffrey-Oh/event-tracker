@@ -54,14 +54,12 @@ class SaveEventServiceTest {
         )
 
         val eventSlot = slot<Event>()
-        val userIdSlot = slot<Long>()
-        val keywordSlot = slot<String>()
 
         val event = command.toEvent()
 
         every {
             eventRedisPort.saveToRedis(capture(eventSlot))
-                .then(statisticsRedisPort.saveEventCount(EventRedisQuery.fromQuery(command)))
+                .then(statisticsRedisPort.saveEventCount(EventRedisQuery.toQuery(command)))
         } returns Mono.empty()
 
         // when
@@ -78,7 +76,7 @@ class SaveEventServiceTest {
 
         verify(exactly = 1) {
             eventRedisPort.saveToRedis(capture(eventSlot))
-                .then(statisticsRedisPort.saveEventCount(EventRedisQuery.fromQuery(command)))
+                .then(statisticsRedisPort.saveEventCount(EventRedisQuery.toQuery(command)))
         }
 
     }
