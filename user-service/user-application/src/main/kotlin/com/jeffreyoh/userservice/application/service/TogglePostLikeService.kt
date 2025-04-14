@@ -8,6 +8,8 @@ import com.jeffreyoh.userservice.application.port.out.EventTrackerPort
 import com.jeffreyoh.userservice.application.port.out.PostLikeCommandPort
 import com.jeffreyoh.userservice.core.domain.event.EventMetadata
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Scheduler
+import reactor.core.scheduler.Schedulers
 import java.util.*
 
 class TogglePostLikeService(
@@ -34,12 +36,22 @@ class TogglePostLikeService(
 
     private fun handleUnlike(command: PostLikeCommand.TogglePostLike): Mono<Void> {
         return postLikeCommandPort.delete(command.userId, command.postId)
-            .then(sendLikeEvent(command, EventType.UNLIKE))
+            .doOnSuccess {
+                sendLikeEvent(command, EventType.UNLIKE)
+                    .subscribeOn(Schedulers.parallel())
+                    .subscribe()
+            }
+            .then()
     }
 
     private fun handleLike(command: PostLikeCommand.TogglePostLike): Mono<Void> {
         return postLikeCommandPort.save(command.toPostLike())
-            .then(sendLikeEvent(command, EventType.LIKE))
+            .doOnSuccess {
+                sendLikeEvent(command, EventType.LIKE)
+                    .subscribeOn(Schedulers.parallel())
+                    .subscribe()
+            }
+            .then()
     }
 
     private fun sendLikeEvent(command: PostLikeCommand.TogglePostLike, eventType: EventType): Mono<Void> {
