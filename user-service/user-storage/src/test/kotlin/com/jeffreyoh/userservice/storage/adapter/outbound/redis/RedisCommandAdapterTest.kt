@@ -40,51 +40,6 @@ class RedisCommandAdapterTest {
     private fun getKey(userId: Long): String = KEY.format(userId)
 
     @Test
-    fun `사용자의 좋아요 상태를 저장한다`() {
-        // given
-        val userId = 1L
-        val postId = 1L
-
-        val keySlot = slot<String>()
-        val valueSlot = slot<String>()
-
-        every {
-            redisTemplate.opsForValue().set(capture(keySlot), capture(valueSlot))
-        } returns Mono.empty()
-
-        // when
-        val result = redisCommandAdapter.saveLikeCheck(userId, postId)
-
-        // then
-        StepVerifier.create(result)
-            .verifyComplete()
-
-        verify(exactly = 1) { redisTemplate.opsForValue().set(keySlot.captured, valueSlot.captured) }
-    }
-
-    @Test
-    fun `사용자의 좋아요 상태를 삭제한다`() {
-        // given
-        val userId = 1L
-        val postId = 1L
-
-        val keySlot = slot<String>()
-
-        every {
-            redisTemplate.delete(capture(keySlot))
-        } returns Mono.empty()
-
-        // when
-        val result = redisCommandAdapter.deleteLikeCheck(userId, postId)
-
-        // then
-        StepVerifier.create(result)
-            .verifyComplete()
-
-        verify(exactly = 1) { redisTemplate.delete(keySlot.captured) }
-    }
-
-    @Test
     fun `최근 키워드 최대 10개까지 저장한다`() {
         // given
         val userId = 1L

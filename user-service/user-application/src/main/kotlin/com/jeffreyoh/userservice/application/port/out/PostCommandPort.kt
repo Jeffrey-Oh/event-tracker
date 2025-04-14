@@ -1,4 +1,4 @@
-package com.jeffreyoh.userservice.port.out
+package com.jeffreyoh.userservice.application.port.out
 
 import com.jeffreyoh.userservice.core.domain.post.Post
 import reactor.core.publisher.Mono

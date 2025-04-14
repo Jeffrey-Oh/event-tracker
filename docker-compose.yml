@@ -10,7 +10,6 @@ services:
       POSTGRES_PASSWORD: event_pass
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: always
 

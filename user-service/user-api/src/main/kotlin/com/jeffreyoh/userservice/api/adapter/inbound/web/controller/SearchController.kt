@@ -2,7 +2,7 @@ package com.jeffreyoh.userservice.api.adapter.inbound.web.controller
 
 import com.jeffreyoh.userservice.api.adapter.inbound.web.dto.PostDTO
 import com.jeffreyoh.userservice.api.adapter.inbound.web.dto.SearchDTO
-import com.jeffreyoh.userservice.port.`in`.SearchUseCase
+import com.jeffreyoh.userservice.application.port.`in`.SearchUseCase
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono

@@ -1,7 +1,7 @@
 package com.jeffreyoh.userservice.storage.adapter.outbound.postgre
 
 import com.jeffreyoh.userservice.core.domain.post.PostLike
-import com.jeffreyoh.userservice.port.out.PostLikeCommandPort
+import com.jeffreyoh.userservice.application.port.out.PostLikeCommandPort
 import com.jeffreyoh.userservice.storage.adapter.outbound.postgre.repository.PostLikeCustomRepository
 import com.jeffreyoh.userservice.storage.entity.PostLikeEntity
 import com.jeffreyoh.userservice.storage.adapter.outbound.postgre.repository.PostLikeRepository

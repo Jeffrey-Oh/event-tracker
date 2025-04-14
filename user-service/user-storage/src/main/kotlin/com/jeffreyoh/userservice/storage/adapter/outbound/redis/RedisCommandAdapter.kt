@@ -13,22 +13,8 @@ class RedisCommandAdapter(
 ): RedisCommandPort {
 
     companion object {
-        private const val LIKE_CHECK_KEY = "like:user:%d:post:%d"
         private const val RECENT_KEYWORD_LIMIT = 10
         private const val TTL_HOURS = 1L
-
-        fun saveLikeCheckKey(userId: Long, postId: Long) = LIKE_CHECK_KEY.format(userId, postId)
-    }
-
-    override fun saveLikeCheck(userId: Long, postId: Long): Mono<Void> {
-        return redisTemplate.opsForValue()
-            .set(saveLikeCheckKey(userId, postId), "true")
-            .then()
-    }
-
-    override fun deleteLikeCheck(userId: Long, postId: Long): Mono<Void> {
-        return redisTemplate.delete(saveLikeCheckKey(userId, postId))
-            .then()
     }
 
     override fun saveRecentKeyword(userId: Long, keyword: String): Mono<Void> {
