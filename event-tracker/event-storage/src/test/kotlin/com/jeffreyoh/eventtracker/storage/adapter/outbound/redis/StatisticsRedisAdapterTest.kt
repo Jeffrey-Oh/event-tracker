@@ -1,7 +1,8 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
 import com.jeffreyoh.enums.EventType
-import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.application.model.event.EventCommand
+import com.jeffreyoh.eventtracker.application.model.event.EventRedisQuery
 import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -25,7 +26,7 @@ class StatisticsRedisAdapterTest {
 
     @MockK private lateinit var redisTemplate: ReactiveRedisTemplate<String, Long>
     @MockK private lateinit var valueOps: ReactiveValueOperations<String, Long>
-    private lateinit var statisticsRedisAdapter: StatisticsRedisPort
+    private lateinit var statisticsRedisAdapter: StatisticsRedisAdapter
 
     @BeforeEach
     fun setUp() {
@@ -57,17 +58,25 @@ class StatisticsRedisAdapterTest {
 
     @ParameterizedTest
     @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["UNLIKE"])
-    fun `이벤트 LIKE를 제외한 타입별 Redis 키에 대해 카운트를 증가시킨다`(eventType: EventType) {
+    fun `이벤트 타입별 Redis 키에 대해 카운트를 증가 또는 감소시킨다`(eventType: EventType) {
         // given
-        val componentId = 1000L
-        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val command = EventCommand.SaveEvent(
+            eventType = eventType,
+            userId = 1L,
+            sessionId = "sessionId",
+            metadata = EventMetadata(
+                componentId = eventType.componentId,
+                postId = 1L,
+                keyword = "keyword",
+            )
+        )
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
         every { valueOps.increment(capture(redisKeySlot)) } returns Mono.empty()
 
         // when
-        val result = statisticsRedisAdapter.incrementEventCount(eventType, metadata)
+        val result = statisticsRedisAdapter.saveEventCount(EventRedisQuery.fromQuery(command))
 
         // then
         StepVerifier.create(result)
@@ -77,7 +86,7 @@ class StatisticsRedisAdapterTest {
     @Test
     fun `이벤트 LIKE Redis 키에 대해 카운트를 감소시킨다`() {
         // given
-        val componentId = EventType.LIKE.componentId
+        val componentId = EventType.UNLIKE.componentId
         val postId = 1L
         val keySlot = slot<List<String>>()
         val scriptSlot = slot<RedisScript<Long>>()

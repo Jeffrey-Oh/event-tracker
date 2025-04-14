@@ -1,6 +1,6 @@
 package com.jeffreyoh.userservice.storage.adapter.outbound.redis
 
-import com.jeffreyoh.userservice.port.out.ReadRedisPort
+import com.jeffreyoh.userservice.application.port.out.RedisReadPort
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 @Component
 class RedisReadAdapter(
     private val redisTemplate: ReactiveStringRedisTemplate
-): ReadRedisPort {
+): RedisReadPort {
 
     companion object {
         private const val RECENT_KEYWORD_KEY = "recent:search:user:%d"
