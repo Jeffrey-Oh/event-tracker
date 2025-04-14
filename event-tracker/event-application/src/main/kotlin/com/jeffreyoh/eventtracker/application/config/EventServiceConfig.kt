@@ -2,7 +2,6 @@ package com.jeffreyoh.eventtracker.application.config
 
 import com.jeffreyoh.eventtracker.application.port.`in`.SaveEventUseCase
 import com.jeffreyoh.eventtracker.application.port.out.EventRedisPort
-import com.jeffreyoh.eventtracker.application.port.out.RecentSearchRedisPort
 import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
 import com.jeffreyoh.eventtracker.application.service.event.SaveEventService
 import org.springframework.context.annotation.Bean
@@ -14,13 +13,11 @@ class EventServiceConfig {
     @Bean
     fun saveEventUseCase(
         eventRedisPort: EventRedisPort,
-        statisticsRedisPort: StatisticsRedisPort,
-        recentSearchRedisPort: RecentSearchRedisPort
+        statisticsRedisPort: StatisticsRedisPort
     ): SaveEventUseCase
         = SaveEventService(
             eventRedisPort,
-            statisticsRedisPort,
-            recentSearchRedisPort
+            statisticsRedisPort
         )
 
 }

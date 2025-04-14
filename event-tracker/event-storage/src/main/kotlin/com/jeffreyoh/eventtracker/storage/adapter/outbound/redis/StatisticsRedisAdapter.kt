@@ -1,6 +1,7 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
 import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.model.event.EventRedisQuery
 import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
 import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import org.springframework.data.redis.core.ReactiveRedisTemplate
@@ -15,15 +16,15 @@ class StatisticsRedisAdapter(
     private val redisTemplate: ReactiveRedisTemplate<String, Long>
 ): StatisticsRedisPort {
 
-    private fun incrementCount(key: String): Mono<Void> {
+    override fun saveEventCount(query: EventRedisQuery): Mono<Void> {
+        val key = buildKey(query.eventType, query.metadata)
+
+        if (query.eventType == EventType.UNLIKE)
+            return decrementLike(query.metadata.componentId, query.metadata.postId!!)
+
         return redisTemplate.opsForValue()
             .increment(key)
             .then()
-    }
-
-    override fun incrementEventCount(eventType: EventType, metadata: EventMetadata): Mono<Void> {
-        val key = buildKey(eventType, metadata)
-        return redisTemplate.opsForValue().increment(key).then()
     }
 
     override fun getEventCount(eventType: EventType, metadata: EventMetadata): Mono<Long> {
@@ -40,12 +41,7 @@ class StatisticsRedisAdapter(
         }
     }
 
-    override fun incrementLike(componentId: Long, postId: Long): Mono<Void> {
-        val key = buildKey(EventType.LIKE, EventMetadata(componentId = componentId, postId = postId))
-        return incrementCount(key)
-    }
-
-    override fun decrementLike(
+    fun decrementLike(
         componentId: Long,
         postId: Long
     ): Mono<Void> {
@@ -72,14 +68,6 @@ class StatisticsRedisAdapter(
                 .count(1000)
                 .build()
         )
-    }
-
-    override fun getCount(key: String): Mono<Long> {
-        return redisTemplate.opsForValue()
-            .get(key)
-            .map { it.toLong() }
-            .onErrorReturn(NumberFormatException::class.java, 0L)
-            .defaultIfEmpty(0L)
     }
 
     override fun saveCountSnapshot(key: String): Mono<Long> {

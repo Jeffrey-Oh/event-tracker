@@ -1,10 +1,11 @@
-package com.jeffreyoh.userservice.port.out
+package com.jeffreyoh.userservice.application.port.out
 
 import reactor.core.publisher.Mono
 
-interface CommandRedisPort {
+interface RedisCommandPort {
 
     fun saveLikeCheck(userId: Long, postId: Long): Mono<Void>
     fun deleteLikeCheck(userId: Long, postId: Long): Mono<Void>
+    fun saveRecentKeyword(userId: Long, keyword: String): Mono<Void>
 
 }
