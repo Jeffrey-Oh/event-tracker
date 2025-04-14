@@ -82,8 +82,8 @@ BEGIN
             selected_hashtags
         );
 
-        i := i + 1;
         RAISE NOTICE '생성된 게시물 수: %', i;
+        i := i + 1;
 
     EXCEPTION
         WHEN OTHERS THEN

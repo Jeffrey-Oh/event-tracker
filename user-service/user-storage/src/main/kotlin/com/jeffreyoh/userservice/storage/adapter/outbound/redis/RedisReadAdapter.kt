@@ -12,16 +12,8 @@ class RedisReadAdapter(
 
     companion object {
         private const val RECENT_KEYWORD_KEY = "recent:search:user:%d"
-        private const val LIKE_CHECK_KEY = "like:user:%d:post:%d"
 
         fun getRecentKeywordKey(userId: Long) = RECENT_KEYWORD_KEY.format(userId)
-        fun getLikeCheckKey(userId: Long, postId: Long) = LIKE_CHECK_KEY.format(userId, postId)
-    }
-
-    override fun getLikeCheck(userId: Long, postId: Long): Mono<Boolean> {
-        return redisTemplate.opsForValue()
-            .get(getLikeCheckKey(userId, postId))
-            .map { it.toBoolean() }
     }
 
     override fun recentSearchByKeyword(userId: Long): Mono<List<String>> {

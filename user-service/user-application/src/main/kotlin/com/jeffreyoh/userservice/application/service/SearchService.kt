@@ -2,13 +2,13 @@ package com.jeffreyoh.userservice.application.service
 
 import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.userservice.application.model.event.EventTrackerRequest
+import com.jeffreyoh.userservice.application.port.`in`.SearchUseCase
 import com.jeffreyoh.userservice.application.port.out.EventTrackerPort
-import com.jeffreyoh.userservice.application.port.out.RedisReadPort
+import com.jeffreyoh.userservice.application.port.out.PostSearchPort
 import com.jeffreyoh.userservice.application.port.out.RedisCommandPort
+import com.jeffreyoh.userservice.application.port.out.RedisReadPort
 import com.jeffreyoh.userservice.core.domain.event.EventMetadata
 import com.jeffreyoh.userservice.core.domain.post.Post
-import com.jeffreyoh.userservice.port.`in`.SearchUseCase
-import com.jeffreyoh.userservice.port.out.PostSearchPort
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*

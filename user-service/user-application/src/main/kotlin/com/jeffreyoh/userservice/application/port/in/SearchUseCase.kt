@@ -1,4 +1,4 @@
-package com.jeffreyoh.userservice.port.`in`
+package com.jeffreyoh.userservice.application.port.`in`
 
 import com.jeffreyoh.userservice.core.domain.post.Post
 import reactor.core.publisher.Flux

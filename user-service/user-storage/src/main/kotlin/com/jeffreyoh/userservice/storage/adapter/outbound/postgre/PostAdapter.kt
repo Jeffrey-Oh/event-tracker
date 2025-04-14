@@ -1,8 +1,8 @@
 package com.jeffreyoh.userservice.storage.adapter.outbound.postgre
 
 import com.jeffreyoh.userservice.core.domain.post.Post
-import com.jeffreyoh.userservice.port.out.PostCommandPort
-import com.jeffreyoh.userservice.port.out.PostSearchPort
+import com.jeffreyoh.userservice.application.port.out.PostCommandPort
+import com.jeffreyoh.userservice.application.port.out.PostSearchPort
 import com.jeffreyoh.userservice.storage.adapter.outbound.postgre.repository.PostCustomRepository
 import com.jeffreyoh.userservice.storage.adapter.outbound.postgre.repository.PostRepository
 import com.jeffreyoh.userservice.storage.entity.PostEntity
