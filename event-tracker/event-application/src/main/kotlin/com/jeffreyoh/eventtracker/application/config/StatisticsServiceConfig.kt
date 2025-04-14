@@ -1,8 +1,8 @@
 package com.jeffreyoh.eventtracker.application.config
 
-import com.jeffreyoh.eventtracker.application.service.GetStatisticsService
-import com.jeffreyoh.eventtracker.port.input.GetEventStatisticsUseCase
-import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.application.port.`in`.GetEventStatisticsUseCase
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.application.service.statistics.GetStatisticsService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

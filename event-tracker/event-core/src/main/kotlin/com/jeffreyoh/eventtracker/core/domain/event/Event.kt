@@ -1,5 +1,6 @@
 package com.jeffreyoh.eventtracker.core.domain.event
 
+import com.jeffreyoh.enums.EventType
 import java.time.LocalDateTime
 
 data class Event(
@@ -7,7 +8,7 @@ data class Event(
     val eventType: EventType,
     val userId: Long?,
     val sessionId: String,
-    val metadata: EventCommand.EventMetadata,
+    val metadata: EventMetadata,
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

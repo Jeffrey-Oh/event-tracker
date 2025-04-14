@@ -1,8 +1,8 @@
 package com.jeffreyoh.userservice.api.adapter.inbound.web.controller
 
 import com.jeffreyoh.userservice.api.adapter.inbound.web.dto.PostDTO
-import com.jeffreyoh.userservice.port.`in`.CreatePostUseCase
-import com.jeffreyoh.userservice.port.`in`.TogglePostLikeUseCase
+import com.jeffreyoh.userservice.application.port.`in`.CreatePostUseCase
+import com.jeffreyoh.userservice.application.port.`in`.TogglePostLikeUseCase
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping

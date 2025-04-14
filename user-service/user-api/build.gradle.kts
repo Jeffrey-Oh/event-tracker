@@ -9,8 +9,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation(project(":user-service:user-core"))
-    implementation(project(":user-service:user-port"))
     implementation(project(":user-service:user-application"))
     implementation(project(":user-service:user-storage"))
 

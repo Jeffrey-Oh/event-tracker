@@ -1,12 +1,14 @@
 package com.jeffreyoh.eventtracker.application.service
 
+import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.model.event.EventCommand
+import com.jeffreyoh.eventtracker.application.port.`in`.SaveEventUseCase
+import com.jeffreyoh.eventtracker.application.port.out.EventRedisPort
+import com.jeffreyoh.eventtracker.application.port.out.RecentSearchRedisPort
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.application.service.event.SaveEventService
 import com.jeffreyoh.eventtracker.core.domain.event.Event
-import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
-import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
-import com.jeffreyoh.eventtracker.port.output.EventRedisPort
-import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
-import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -42,11 +44,11 @@ class SaveEventServiceTest {
     @EnumSource(EventType::class, mode = EnumSource.Mode.EXCLUDE, names = ["LIKE", "UNLIKE"])
     fun `이벤트 command 를 전달받아 redis 저장 port가 호출된다`(eventType: EventType) {
         // given
-        val command = EventCommand.SaveEventCommand(
+        val command = EventCommand.SaveEvent(
             eventType = eventType,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventCommand.EventMetadata(
+            metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L,
@@ -56,7 +58,7 @@ class SaveEventServiceTest {
 
         val eventSlot = slot<Event>()
         val eventTypeSlot = slot<EventType>()
-        val eventMetadataSlot = slot<EventCommand.EventMetadata>()
+        val eventMetadataSlot = slot<EventMetadata>()
         val userIdSlot = slot<Long>()
         val keywordSlot = slot<String>()
 
@@ -127,11 +129,11 @@ class SaveEventServiceTest {
     @Test
     fun `LIKE 이벤트 - 캐시에 없으면 저장한다`() {
         // given
-        val command = EventCommand.SaveEventCommand(
+        val command = EventCommand.SaveEvent(
             eventType = EventType.LIKE,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventCommand.EventMetadata(
+            metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L,
@@ -169,11 +171,11 @@ class SaveEventServiceTest {
     @Test
     fun `LIKE 이벤트 - 캐시에 이미 있으면 삭제한다`() {
         // given
-        val command = EventCommand.SaveEventCommand(
+        val command = EventCommand.SaveEvent(
             eventType = EventType.UNLIKE,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventCommand.EventMetadata(
+            metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L,

@@ -1,8 +1,8 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.postgre
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
+import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsPostgrePort
 import com.jeffreyoh.eventtracker.core.domain.statistics.Statistics
-import com.jeffreyoh.eventtracker.port.output.StatisticsPostgrePort
 import com.jeffreyoh.eventtracker.storage.adapter.outbound.postgre.repository.StatisticsCustomRepository
 import com.jeffreyoh.eventtracker.storage.entity.StatisticsEntity
 import org.springframework.stereotype.Component

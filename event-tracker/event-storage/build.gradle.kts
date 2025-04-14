@@ -5,8 +5,9 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation(project(":event-tracker:event-core"))
-    implementation(project(":event-tracker:event-port"))
+    implementation(project(":event-tracker:event-application"))
 
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.postgresql:r2dbc-postgresql")

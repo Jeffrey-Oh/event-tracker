@@ -1,10 +1,10 @@
 package com.jeffreyoh.eventtracker.storage.scheduler
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
+import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsPostgrePort
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
 import com.jeffreyoh.eventtracker.core.domain.statistics.Statistics
-import com.jeffreyoh.eventtracker.port.output.StatisticsPostgrePort
-import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component

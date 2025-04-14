@@ -3,7 +3,7 @@ package com.jeffreyoh.eventtracker.api
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.controller.EventController
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.SaveEventDTO
-import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
+import com.jeffreyoh.eventtracker.application.port.`in`.SaveEventUseCase
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest

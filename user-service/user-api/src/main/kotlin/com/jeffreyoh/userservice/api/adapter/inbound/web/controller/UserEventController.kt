@@ -1,7 +1,7 @@
 package com.jeffreyoh.userservice.api.adapter.inbound.web.controller
 
 import com.jeffreyoh.userservice.api.adapter.inbound.web.dto.UserEventTrackerDTO
-import com.jeffreyoh.userservice.port.`in`.EventTrackerUseCase
+import com.jeffreyoh.userservice.application.port.`in`.EventTrackerUseCase
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping

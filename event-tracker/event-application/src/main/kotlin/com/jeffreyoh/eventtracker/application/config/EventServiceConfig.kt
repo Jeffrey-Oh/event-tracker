@@ -1,10 +1,10 @@
 package com.jeffreyoh.eventtracker.application.config
 
-import com.jeffreyoh.eventtracker.application.service.SaveEventService
-import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
-import com.jeffreyoh.eventtracker.port.output.EventRedisPort
-import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
-import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.application.port.`in`.SaveEventUseCase
+import com.jeffreyoh.eventtracker.application.port.out.EventRedisPort
+import com.jeffreyoh.eventtracker.application.port.out.RecentSearchRedisPort
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.application.service.event.SaveEventService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

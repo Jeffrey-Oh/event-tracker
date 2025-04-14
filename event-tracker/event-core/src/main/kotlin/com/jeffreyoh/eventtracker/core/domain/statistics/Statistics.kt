@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.core.domain.statistics
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
+import com.jeffreyoh.enums.EventType
 import java.time.LocalDateTime
 
 data class Statistics(

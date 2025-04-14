@@ -1,8 +1,8 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
-import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
+import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.data.redis.core.script.RedisScript
@@ -21,17 +21,17 @@ class StatisticsRedisAdapter(
             .then()
     }
 
-    override fun incrementEventCount(eventType: EventType, metadata: EventCommand.EventMetadata): Mono<Void> {
+    override fun incrementEventCount(eventType: EventType, metadata: EventMetadata): Mono<Void> {
         val key = buildKey(eventType, metadata)
         return redisTemplate.opsForValue().increment(key).then()
     }
 
-    override fun getEventCount(eventType: EventType, metadata: EventCommand.EventMetadata): Mono<Long> {
+    override fun getEventCount(eventType: EventType, metadata: EventMetadata): Mono<Long> {
         val key = buildKey(eventType, metadata)
         return redisTemplate.opsForValue().get(key).map { it.toLong() }.defaultIfEmpty(0L)
     }
 
-    private fun buildKey(eventType: EventType, metadata: EventCommand.EventMetadata): String {
+    private fun buildKey(eventType: EventType, metadata: EventMetadata): String {
         return when (eventType) {
             EventType.CLICK -> "statistics:${eventType.name}:component:${eventType.componentId}"
             EventType.PAGE_VIEW -> "statistics:${eventType.name}:component:${eventType.componentId}"
@@ -41,7 +41,7 @@ class StatisticsRedisAdapter(
     }
 
     override fun incrementLike(componentId: Long, postId: Long): Mono<Void> {
-        val key = buildKey(EventType.LIKE, EventCommand.EventMetadata(componentId = componentId, postId = postId))
+        val key = buildKey(EventType.LIKE, EventMetadata(componentId = componentId, postId = postId))
         return incrementCount(key)
     }
 
@@ -49,7 +49,7 @@ class StatisticsRedisAdapter(
         componentId: Long,
         postId: Long
     ): Mono<Void> {
-        val key = buildKey(EventType.UNLIKE, EventCommand.EventMetadata(componentId = componentId, postId = postId))
+        val key = buildKey(EventType.UNLIKE, EventMetadata(componentId = componentId, postId = postId))
         val luaScript = RedisScript.of(
             """
             local current = redis.call('GET', KEYS[1])

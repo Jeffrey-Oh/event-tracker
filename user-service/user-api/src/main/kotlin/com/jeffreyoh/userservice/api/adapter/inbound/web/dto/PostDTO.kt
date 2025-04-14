@@ -1,8 +1,8 @@
 package com.jeffreyoh.userservice.api.adapter.inbound.web.dto
 
-import com.jeffreyoh.userservice.core.domain.Post
-import com.jeffreyoh.userservice.core.command.PostCommand
-import com.jeffreyoh.userservice.core.command.PostLikeCommand
+import com.jeffreyoh.userservice.application.model.post.PostCommand
+import com.jeffreyoh.userservice.application.model.post.PostLikeCommand
+import com.jeffreyoh.userservice.core.domain.post.Post
 
 class PostDTO {
 
@@ -26,8 +26,8 @@ class PostDTO {
         val postId: Long,
         val userId: Long,
     ) {
-        fun toCommand(): PostLikeCommand.PostLikeCommand {
-            return PostLikeCommand.PostLikeCommand(
+        fun toCommand(): PostLikeCommand.TogglePostLike {
+            return PostLikeCommand.TogglePostLike(
                 postId = postId,
                 userId = userId,
             )

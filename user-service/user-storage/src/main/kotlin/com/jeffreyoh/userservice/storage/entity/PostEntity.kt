@@ -1,7 +1,7 @@
 package com.jeffreyoh.userservice.storage.entity
 
-import com.jeffreyoh.userservice.core.domain.Post
-import com.jeffreyoh.userservice.core.domain.Visibility
+import com.jeffreyoh.userservice.core.domain.post.Post
+import com.jeffreyoh.userservice.core.domain.post.Visibility
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime

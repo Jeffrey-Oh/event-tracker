@@ -1,7 +1,7 @@
 package com.jeffreyoh.eventtracker.api.adapter.inbound.web.controller
 
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.SaveEventDTO
-import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
+import com.jeffreyoh.eventtracker.application.port.`in`.SaveEventUseCase
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

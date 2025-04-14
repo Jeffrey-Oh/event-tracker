@@ -1,8 +1,8 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
-import com.jeffreyoh.eventtracker.port.output.StatisticsRedisPort
+import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.eventtracker.application.port.out.StatisticsRedisPort
+import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -38,7 +38,7 @@ class StatisticsRedisAdapterTest {
         // given
         val componentId = 1000L
         val expectedCount = 500L
-        val metadata = EventCommand.EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps
@@ -60,7 +60,7 @@ class StatisticsRedisAdapterTest {
     fun `이벤트 LIKE를 제외한 타입별 Redis 키에 대해 카운트를 증가시킨다`(eventType: EventType) {
         // given
         val componentId = 1000L
-        val metadata = EventCommand.EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
+        val metadata = EventMetadata(componentId = componentId, postId = 1L, keyword = "keyword")
         val redisKeySlot = slot<String>()
 
         every { redisTemplate.opsForValue() } returns valueOps

@@ -1,8 +1,8 @@
 package com.jeffreyoh.userservice.application.config
 
 import com.jeffreyoh.userservice.application.service.UserEventTrackerService
-import com.jeffreyoh.userservice.port.`in`.EventTrackerUseCase
-import com.jeffreyoh.userservice.port.out.EventTrackerPort
+import com.jeffreyoh.userservice.application.port.`in`.EventTrackerUseCase
+import com.jeffreyoh.userservice.application.port.out.EventTrackerPort
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
