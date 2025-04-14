@@ -1,12 +1,12 @@
 package com.jeffreyoh.userservice.application.service
 
-import com.jeffreyoh.userservice.core.command.EventTrackerCommand
-import com.jeffreyoh.userservice.core.command.EventTrackerCommand.EventMetadata
-import com.jeffreyoh.userservice.core.command.PostLikeCommand
-import com.jeffreyoh.userservice.core.domain.EventType
-import com.jeffreyoh.userservice.port.`in`.TogglePostLikeUseCase
+import com.jeffreyoh.enums.EventType
+import com.jeffreyoh.userservice.application.model.event.EventTrackerRequest
+import com.jeffreyoh.userservice.application.model.post.PostLikeCommand
+import com.jeffreyoh.userservice.application.port.`in`.TogglePostLikeUseCase
+import com.jeffreyoh.userservice.application.port.out.EventTrackerPort
+import com.jeffreyoh.userservice.core.domain.event.EventMetadata
 import com.jeffreyoh.userservice.port.out.CommandRedisPort
-import com.jeffreyoh.userservice.port.out.EventTrackerPort
 import com.jeffreyoh.userservice.port.out.PostLikeCommandPort
 import com.jeffreyoh.userservice.port.out.ReadRedisPort
 import reactor.core.publisher.Mono
@@ -19,7 +19,7 @@ class TogglePostLikeService(
     private val commandRedisPort: CommandRedisPort
 ) : TogglePostLikeUseCase {
 
-    override fun toggle(command: PostLikeCommand.PostLikeCommand): Mono<Void> {
+    override fun toggle(command: PostLikeCommand.TogglePostLike): Mono<Void> {
         return getLikeStatus(command.userId, command.postId)
             .flatMap { likeExists ->
                 if (likeExists) {
@@ -40,21 +40,21 @@ class TogglePostLikeService(
             .defaultIfEmpty(false)
     }
 
-    private fun handleUnlike(command: PostLikeCommand.PostLikeCommand): Mono<Void> {
+    private fun handleUnlike(command: PostLikeCommand.TogglePostLike): Mono<Void> {
         return commandRedisPort.deleteLikeCheck(command.userId, command.postId)
             .then(postLikeCommandPort.delete(command.userId, command.postId))
             .then(sendLikeEvent(command, EventType.UNLIKE))
     }
 
-    private fun handleLike(command: PostLikeCommand.PostLikeCommand): Mono<Void> {
+    private fun handleLike(command: PostLikeCommand.TogglePostLike): Mono<Void> {
         return commandRedisPort.saveLikeCheck(command.userId, command.postId)
             .then(postLikeCommandPort.save(command.toPostLike()))
             .then(sendLikeEvent(command, EventType.LIKE))
     }
 
-    private fun sendLikeEvent(command: PostLikeCommand.PostLikeCommand, eventType: EventType): Mono<Void> {
+    private fun sendLikeEvent(command: PostLikeCommand.TogglePostLike, eventType: EventType): Mono<Void> {
         return eventTrackerPort.sendEvent(
-            EventTrackerCommand.SaveEventCommand(
+            EventTrackerRequest.SaveEvent(
                 eventType = eventType,
                 userId = command.userId,
                 sessionId = UUID.randomUUID().toString(),

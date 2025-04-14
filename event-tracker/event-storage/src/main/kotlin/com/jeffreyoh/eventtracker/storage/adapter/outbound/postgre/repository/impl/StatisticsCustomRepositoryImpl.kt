@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.postgre.repository.impl
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
+import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.storage.adapter.outbound.postgre.repository.StatisticsCustomRepository
 import com.jeffreyoh.eventtracker.storage.entity.StatisticsEntity
 import org.springframework.r2dbc.core.DatabaseClient

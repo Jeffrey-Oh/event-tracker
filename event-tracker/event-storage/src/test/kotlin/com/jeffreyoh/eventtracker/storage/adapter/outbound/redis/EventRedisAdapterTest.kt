@@ -1,8 +1,8 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
+import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.core.domain.event.Event
-import com.jeffreyoh.eventtracker.core.domain.event.EventCommand
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
+import com.jeffreyoh.eventtracker.core.domain.event.EventMetadata
 import com.jeffreyoh.eventtracker.core.domain.event.toJson
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -64,7 +64,7 @@ class EventRedisAdapterTest {
             eventType = eventType,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventCommand.EventMetadata(
+            metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
             ),
@@ -102,7 +102,7 @@ class EventRedisAdapterTest {
             eventType = EventType.LIKE,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventCommand.EventMetadata(
+            metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L
@@ -139,7 +139,7 @@ class EventRedisAdapterTest {
             eventType = EventType.LIKE,
             userId = 1L,
             sessionId = "session-123",
-            metadata = EventCommand.EventMetadata(
+            metadata = EventMetadata(
                 componentId = 1000L,
                 elementId = "element-123",
                 postId = 1L

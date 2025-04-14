@@ -1,9 +1,9 @@
 package com.jeffreyoh.eventtracker.api.adapter.inbound.web.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.SaveEventDTO
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
-import com.jeffreyoh.eventtracker.port.input.SaveEventUseCase
+import com.jeffreyoh.eventtracker.application.port.`in`.SaveEventUseCase
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.BDDMockito.given

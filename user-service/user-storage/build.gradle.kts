@@ -5,8 +5,9 @@ plugins {
 }
 
 dependencies {
+	implementation(project(":common"))
 	implementation(project(":user-service:user-core"))
-	implementation(project(":user-service:user-port"))
+	implementation(project(":user-service:user-application"))
 
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")

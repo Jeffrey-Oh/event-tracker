@@ -2,7 +2,7 @@ package com.jeffreyoh.eventtracker.api.adapter.inbound.web.controller
 
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.EventStatisticsDTO
 import com.jeffreyoh.eventtracker.api.adapter.inbound.web.dto.toEventTypeOrThrow
-import com.jeffreyoh.eventtracker.port.input.GetEventStatisticsUseCase
+import com.jeffreyoh.eventtracker.application.port.`in`.GetEventStatisticsUseCase
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping

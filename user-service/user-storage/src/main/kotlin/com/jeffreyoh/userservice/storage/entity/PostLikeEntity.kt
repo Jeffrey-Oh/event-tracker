@@ -1,6 +1,6 @@
 package com.jeffreyoh.userservice.storage.entity
 
-import com.jeffreyoh.userservice.core.domain.PostLike
+import com.jeffreyoh.userservice.core.domain.post.PostLike
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime

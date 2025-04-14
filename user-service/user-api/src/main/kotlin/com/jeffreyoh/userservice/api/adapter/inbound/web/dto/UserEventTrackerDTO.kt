@@ -1,8 +1,9 @@
 package com.jeffreyoh.userservice.api.adapter.inbound.web.dto
 
+import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.userservice.api.infrastructure.exception.ValidationException
-import com.jeffreyoh.userservice.core.command.EventTrackerCommand
-import com.jeffreyoh.userservice.core.domain.EventType
+import com.jeffreyoh.userservice.application.model.event.EventTrackerCommand
+import com.jeffreyoh.userservice.core.domain.event.EventMetadata
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -23,7 +24,7 @@ class UserEventTrackerDTO {
         @field:Valid
         val metadata: EventMetadataRequest,
     ) {
-        fun toCommand(): EventTrackerCommand.SaveEventCommand {
+        fun toCommand(): EventTrackerCommand.SaveEvent {
             val eventType = eventType.toEventTypeOrThrow()
 
             if (eventType == EventType.LIKE && userId == null) {
@@ -38,11 +39,11 @@ class UserEventTrackerDTO {
                 throw ValidationException(HttpStatus.BAD_REQUEST, "metadata.elementId is required")
             }
 
-            return EventTrackerCommand.SaveEventCommand(
+            return EventTrackerCommand.SaveEvent(
                 eventType,
                 userId,
                 sessionId,
-                EventTrackerCommand.EventMetadata(
+                EventMetadata(
                     metadata.componentId,
                     metadata.elementId,
                     metadata.keyword,

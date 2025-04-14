@@ -5,8 +5,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation(project(":event-tracker:event-core"))
-    implementation(project(":event-tracker:event-port"))
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("io.projectreactor:reactor-core")

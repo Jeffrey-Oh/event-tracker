@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.storage.adapter.outbound.redis
 
-import com.jeffreyoh.eventtracker.port.output.RecentSearchRedisPort
+import com.jeffreyoh.eventtracker.application.port.out.RecentSearchRedisPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Component

@@ -1,6 +1,6 @@
 package com.jeffreyoh.eventtracker.storage.entity
 
-import com.jeffreyoh.eventtracker.core.domain.event.EventType
+import com.jeffreyoh.enums.EventType
 import com.jeffreyoh.eventtracker.core.domain.statistics.Statistics
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
