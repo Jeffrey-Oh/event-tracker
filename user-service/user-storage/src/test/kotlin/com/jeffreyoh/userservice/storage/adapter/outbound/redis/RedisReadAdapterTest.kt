@@ -1,5 +1,6 @@
 package com.jeffreyoh.userservice.storage.adapter.outbound.redis
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -19,11 +20,13 @@ class RedisReadAdapterTest {
 
     @MockK private lateinit var redisTemplate: ReactiveStringRedisTemplate
     @MockK private lateinit var listOps: ReactiveListOperations<String, String>
+    @MockK private lateinit var objectMapper: ObjectMapper
     private lateinit var redisReadAdapter: RedisReadAdapter
 
     @BeforeEach
     fun setUp() {
         redisReadAdapter = RedisReadAdapter(
+            objectMapper,
             redisTemplate
         )
 

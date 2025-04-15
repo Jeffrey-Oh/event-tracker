@@ -27,31 +27,31 @@ class RedissonLockAdapter(
             .flatMap { locked ->
                 when {
                     locked -> {
-                        log.debug("락 획득 성공: key=$key")
+                        log.info { "락 획득 성공: key=$key" }
                         block()
                             .flatMap { result ->
                                 lock.unlock()
-                                    .doOnSuccess { log.debug("락 해제 성공: key=$key") }
+                                    .doOnSuccess { log.info { "락 해제 성공: key=$key" } }
                                     .then(Mono.justOrEmpty(result))
                             }
                             .onErrorResume { e ->
                                 lock.unlock()
-                                    .doOnSuccess { log.debug("락 해제 성공(에러 후): key=$key") }
+                                    .doOnSuccess { log.info { "락 해제 성공(에러 후): key=$key" } }
                                     .then(Mono.error(e))
                             }
                     }
                     else -> {
-                        log.warn("락 획득 실패: key=$key")
+                        log.warn { "락 획득 실패: key=$key" }
                         Mono.error(IllegalStateException("락 획득 실패: $key"))
                     }
                 }
             }
             .doOnError { e ->
-                log.error("락 처리 실패: key=$key, error=${e.message}")
+                log.error { "락 처리 실패: key=$key, error=${e.message}" }
             }
             .doFinally {
                 val durationMs = (System.nanoTime() - startTime) / 1_000_000
-                log.info("락 처리 시간: ${durationMs}ms for key=$key")
+                log.info { "락 처리 시간: ${durationMs}ms for key=$key" }
             }
     }
 }

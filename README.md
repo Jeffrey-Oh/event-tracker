@@ -1,134 +1,115 @@
-# 🚀 Reactive Event Tracker
+# 📊 Event Tracker
 
-Spring WebFlux + Redis + PostgreSQL 기반의 고성능 사용자 이벤트 수집 및 통계 시스템
-
-## 📌 프로젝트 개요
-
-대규모 트래픽 환경에서 유저의 행동 이벤트(클릭, 검색, 페이지 이동, 좋아요 등)를 수집하고 Redis를 통해 실시간 통계 처리 후 PostgreSQL에 적재하는 백엔드 시스템입니다. 실시간성과 확장성을 고려한 아키텍처로, 이벤트 흐름과 통계를 안정적으로 관리합니다.
+Reactive 기반 이벤트 수집 시스템  
+**Kotlin + Spring WebFlux + Redis + PostgreSQL 구조로, 최대 RPS 340 이상 처리 가능**
 
 ---
 
-## 🧱 기술 스택
+## 🧩 Overview
 
-| 영역       | 기술                                                   |
-|------------|--------------------------------------------------------|
-| Language   | Kotlin                                                 |
-| Framework  | Spring Boot 3.x (WebFlux)                              |
-| DB         | PostgreSQL 16 (R2DBC + JSONB + 파티셔닝)              |
-| Cache/Queue| Redis 7.4 (Reactive, Lua Script 활용)                  |
-| Build      | Gradle (Kotlin DSL, 멀티모듈)                          |
-| Test       | Locust (부하 테스트), JUnit5, MockK                    |
-| Infra      | Docker, Docker Compose                                 |
-| Logging    | KotlinLogging (oshai), SLF4J                           |
+이 프로젝트는 사용자 이벤트(클릭, 좋아요, 검색 등)를 수집하고, 실시간 통계 및 인기 콘텐츠를 분석하는 **이벤트 트래킹 시스템**입니다.  
+핵심 목표는 **WebFlux 기반 Reactive 아키텍처**, **Redis 캐싱**, **PostgreSQL 집계 처리**를 통해 대규모 트래픽 상황에서도 견고한 성능을 확보하는 것입니다.
 
 ---
 
-## ⚙️ 아키텍처
+## 🏗 Architecture
 
-```plaintext
-[Client]
-   ↓
-[Spring WebFlux API] (/api/events, /api/posts/like 등)
-   ↓
-[Redis] (임시 저장, TTL, Lua 기반 증분 처리)
-   ↓
-[Scheduler or Kafka]
-   ↓
-[PostgreSQL] (R2DBC, JSONB, 통계 저장)
-   ↓
-[Statistics API] (/api/statistics 등)
+```
+┌────────────────────┐
+│     event-api      │ ◀────────────┐
+└────────────────────┘              │
+         │ WebFlux API              │
+         ▼                         API 요청/응답
+┌────────────────────┐              │
+│ event-application  │◀─────────────┘
+│  - UseCase / 전략패턴│
+└────────────────────┘
+         ▼
+┌────────────────────┐      ┌────────────────────┐
+│    event-port      │◀────▶│   event-storage    │
+│ (in: usecase port) │      │ Redis / PostgreSQL │
+└────────────────────┘      └────────────────────┘
+         ▲
+     Domain Logic
+         ▲
+┌────────────────────┐
+│    event-core      │
+│ Event / Command 등  │
+└────────────────────┘
 ```
 
 ---
 
-## 🎯 주요 기능
+## ⚙️ 기술 스택
 
-- 모든 사용자 이벤트 수집 API 지원 (CLICK, PAGE_VIEW, SEARCH, LIKE 등)
-- Redis를 통한 빠른 TTL 기반 임시 저장 및 통계 카운팅
-- Redis 통계 데이터를 주기적으로 PostgreSQL로 저장 (Lua Script 활용)
-- 최근 검색어 Redis 리스트 저장 및 중복 제거
-- 통계 데이터 조회 API 제공
-- 추후 Kafka 및 ELK, Prometheus 도입 준비
-
----
-
-## 🐳 Docker 이미지 빌드 및 실행 방법 (with Jib)
-```
-# 1. 루트 프로젝트에서 Jib를 이용해 API 모듈 Docker 이미지 빌드
-$ ./gradlew jibDockerBuild
-
-# 2. Docker Compose로 컨테이너 실행
-$ docker compose up -d
-```
->✅ event-tracker와 user-service의 각 api 모듈에 jib 설정이 정의되어 있으므로, 루트 디렉토리에서 한 번에 빌드 후 docker compose 실행해야 합니다.
+| 분야 | 기술 |
+|------|------|
+| Language | Kotlin 1.9 |
+| Framework | Spring Boot 3.x, Spring WebFlux |
+| Data | Redis (cache), PostgreSQL (persistent) |
+| Test | MockK, WebFluxTest |
+| Load Test | Locust |
+| Infra | Docker, Jib |
+| Arch | Hexagonal + Multi-Module 구조 |
 
 ---
 
-## 📊 성능 목표 (MVP 기준)
+## 🔥 주요 기능
 
-| 항목                   | 목표                |
-|------------------------|---------------------|
-| 초당 이벤트 처리량     | 1,000 EPS 이상       |
-| 전체 테스트 이벤트 수  | 100만 건 이상        |
-| 통계 API 응답 시간     | 평균 100ms 이하      |
+### ✅ 이벤트 수집 API
+- 클릭, 페이지뷰, 검색, 좋아요 이벤트 저장
+- `SaveEventService`는 전략 패턴으로 확장성 확보
 
----
+### 🧠 실시간 통계
+- Redis 기반 TTL + Sorted Set + Lua Script 활용
+- `SEARCH`, `CLICK` 등 이벤트 통계를 Redis로 관리
+- 인기도 기준으로 `Top 5 키워드`, `인기 게시물` 조회 가능
 
-## 🧪 테스트 시나리오
+### 💾 PostgreSQL 연동
+- 좋아요 상태 관리: `post_like` 테이블로 정합성 확보
+- 인기 게시물 선정 로직은 DB에서 처리하여 정확도 강화
 
-- [x] 게시물 좋아요 / 좋아요 취소
-- [x] 게시물 조회 (Page View)
-- [x] 클릭 이벤트
-- [x] 검색 이벤트
-- [x] 최근 검색어 중복 제거 및 TTL 유지
-- [x] Redis → PostgreSQL 통계 저장
-- [x] Lua 기반 증분 처리 + 스냅샷 키 분리 저장
-- [x] 전체 Locust 시나리오 실행 (최대 사용자 수: 500명, 게시물: 100건 기준)
+### 🧪 부하 테스트
+- Locust 기반 최대 **RPS 340+**까지 테스트 완료
+- M1 Mac 기준, CPU 97% 사용률 도달 시 성능 리밋 감지
 
 ---
 
-## 📁 주요 디렉토리 구조
+## 🧪 성능 테스트 결과 (Locust)
 
-```plaintext
-event-tracker/
-  ┣ api/             # WebFlux API (컨트롤러, 요청/응답 DTO)
-  ┣ application/     # UseCase, Service, 비즈니스 로직
-  ┣ core/            # 도메인, Command, 공통 클래스
-  ┣ port/            # Port 인터페이스 (입력/출력)
-  ┣ storage/         # Redis, PostgreSQL 접근 어댑터
-  ┗ locust/          # Locust 시나리오 스크립트
+- **시나리오**: 500명 사용자, 초당 10명 증가, 총 5분 진행
+- **최대 RPS**: `340.8`
+- **평균 응답속도**: `125.42ms`
+- **95% 응답 지연**: `660ms`
+- **에러율**: `0%`
+- **CPU 사용률**: 평균 약 60~97%
+
+(※ 참고: Redis 키 TTL을 1분으로 설정하여 실시간 재캐싱 상황도 시뮬레이션함)
+
+---
+
+## 🧰 실행 방법
+
+```bash
+# 빌드 및 실행
+./gradlew clean build jibDockerBuild
+docker-compose up -d
 ```
 
 ---
 
-## 🔄 향후 확장 계획
+## 🎯 향후 계획
 
-- Kafka 기반 이벤트 처리 구조 전환 (Redis → Kafka → Consumer)
-- Elasticsearch + Kibana 도입하여 검색 인덱스 최적화 및 시각화
-- Prometheus + Grafana → 실시간 성능 모니터링 대시보드 구축
-- 이벤트 유형 다양화 (스크롤, 댓글, 공유 등)
-- 대규모 트래픽 (200만 게시물 기준) 성능 테스트
+| 기능 | 상태 |
+|------|------|
+| Kafka 기반 비동기 확장 | 🔜 예정 |
+| Elasticsearch 기반 검색 최적화 | 🔜 예정 |
+| Prometheus + Grafana 모니터링 | 🔜 예정 |
 
 ---
 
-## 📈 200만 건 데이터 테스트 계획
+## 📎 기타 참고
 
-### 테스트 구성
-
-| 항목       | 수치              |
-|------------|-------------------|
-| 게시물 수   | 최대 2,000,000건   |
-| 사용자 수   | 최대 100,000명     |
-| 테스트 시간 | 10~30분 지속 부하 |
-| TPS 목표    | 1,000 EPS 이상     |
-
-### 데이터 준비 방법
-
-1. **초기 데이터 삽입 스크립트 작성 (게시물)**
-  - 게시물: content + imageUrl + hashtags 조합 자동화
-
-2. **postgreSQL** 프로시저 사용
-
-
-3. **성능별 단계적 증가**
-  - 10만건 → 50만건 → 100만건 → 200만건 순차 삽입
+- Redis 캐시 미스 시 Redisson 락 기반으로 DB 조회 후 캐싱
+    - 락 실패 시에도 fallback 없이 DB 응답 보장
+- TTL로 키 만료 시 Redis 락 재시도 구간에서 일시적 RPS 감소 발생
