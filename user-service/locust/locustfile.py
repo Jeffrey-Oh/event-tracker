@@ -1,16 +1,19 @@
-from locust import FastHttpUser, task, between
+from locust import FastHttpUser, task, constant_throughput
 import random
 
-KEYWORDS = ["고양이", "강아지", "음식", "여행", "공부"]
+KEYWORDS = [
+    "고양이", "강아지", "여행", "맛집", "일상",
+    "운동", "독서", "음악", "코딩", "스터디"
+]
 
 class UserBehavior(FastHttpUser):
-    wait_time = between(0.5, 1.5)
+    # 사용자당 초당 1회 요청 (200명 → 200 RPS)
+    wait_time = constant_throughput(1)
 
     @task(4)
     def like_or_unlike_post(self):
         user_id = random.randint(1, 100)
-        post_id = random.randint(1, 100)
-
+        post_id = random.randint(1, 1000)
         self.client.post(
             "/api/posts/like",
             json={"userId": user_id, "postId": post_id},
@@ -20,12 +23,11 @@ class UserBehavior(FastHttpUser):
     @task(2)
     def search_post(self):
         user_id = random.randint(1, 100)
-        keyword = random.choice(KEYWORDS)
-
+        keyword = KEYWORDS[(user_id % len(KEYWORDS))]
         self.client.get(
             "/api/search",
             params={"userId": user_id, "keyword": keyword},
-            name="GET /api/search"
+            name="GET /search"
         )
 
     @task(2)
@@ -42,7 +44,7 @@ class UserBehavior(FastHttpUser):
             json={
                 "eventType": event_type,
                 "userId": random.randint(1, 100),
-                "sessionId": f"session-{random.randint(1, 1000)}",
+                "sessionId": f"session-{random.randint(1, 100)}",
                 "metadata": {
                     "componentId": component_id,
                     "elementId": f"element-{component_id}"

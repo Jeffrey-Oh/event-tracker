@@ -34,13 +34,15 @@ class UserServiceConfig {
         eventTrackerPort: EventTrackerPort,
         postSearchPort: PostSearchPort,
         readRedisPost: RedisReadPort,
-        redisCommandPort: RedisCommandPort
+        redisCommandPort: RedisCommandPort,
+        distributedLockPort: DistributedLockPort
     ) : SearchUseCase =
         SearchService(
             eventTrackerPort,
             postSearchPort,
             readRedisPost,
-            redisCommandPort
+            redisCommandPort,
+            distributedLockPort
     )
 
 }

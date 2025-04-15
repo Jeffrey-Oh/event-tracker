@@ -26,6 +26,11 @@ CREATE TABLE post_like (
     CONSTRAINT uk_post_like UNIQUE (user_id, post_id)
 );
 
+-- 인덱스 생성
+
+CREATE INDEX idx_post_hashtags_gin ON post USING GIN (hashtags);
+CREATE INDEX post_like_post_id_idx ON post_like(post_id);
+
 -- 초기 데이터 생성
 
 DO $$
@@ -43,7 +48,7 @@ DECLARE
 BEGIN
     RAISE NOTICE '데이터 생성 시작';
 
-    WHILE i <= 100 LOOP
+    WHILE i <= 1000 LOOP
     BEGIN
         selected_hashtags := '{}';
         count := (random() * 3 + 1)::INT;
@@ -76,13 +81,16 @@ BEGIN
             image_urls,
             hashtags
         ) VALUES (
-            (random() * 100 + 1)::BIGINT,
+            (random() * 1000 + 1)::BIGINT,
             format('이것은 자동 생성된 게시물입니다 %s', i),
             format('http://img.com/%s.jpg', i),
             selected_hashtags
         );
 
-        RAISE NOTICE '생성된 게시물 수: %', i;
+        IF i % 100 = 0 THEN
+            RAISE NOTICE '생성된 게시물 수: %', i;
+        END IF;
+
         i := i + 1;
 
     EXCEPTION

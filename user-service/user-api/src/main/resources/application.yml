@@ -26,10 +26,11 @@ spring:
 
 logging:
   level:
-    org.springframework.r2dbc: DEBUG
-    io.r2dbc.postgresql.QUERY: DEBUG
-    io.r2dbc.postgresql.PARAM: DEBUG
-    org.springframework.data.redis: DEBUG
+    root: INFO
+    org.springframework.r2dbc: INFO
+    io.r2dbc.postgresql.QUERY: INFO
+    io.r2dbc.postgresql.PARAM: INFO
+    org.springframework.data.redis: INFO
 
 event.tracker.url: http://localhost:8080
 
