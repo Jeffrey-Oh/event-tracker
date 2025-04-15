@@ -2,6 +2,7 @@ package com.jeffreyoh.userservice.api.adapter.inbound.web.dto
 
 import com.jeffreyoh.userservice.application.model.post.PostCommand
 import com.jeffreyoh.userservice.application.model.post.PostLikeCommand
+import com.jeffreyoh.userservice.application.model.post.SearchKeywordSaveRedisByLikeResult
 import com.jeffreyoh.userservice.core.domain.post.Post
 
 class PostDTO {
@@ -41,10 +42,11 @@ class PostDTO {
         val imageUrls: String?,
         val hashtags: List<String>?,
         val createdAt: String,
-        val updatedAt: String
+        val updatedAt: String,
+        val likeCount: Long,
     ) {
         companion object {
-            fun fromDomain(post: Post): PostResponse {
+            fun fromDomain(post: SearchKeywordSaveRedisByLikeResult): PostResponse {
                 return PostResponse(
                     postId = post.postId,
                     userId = post.userId,
@@ -52,7 +54,8 @@ class PostDTO {
                     imageUrls = post.imageUrls,
                     hashtags = post.hashtags,
                     createdAt = post.createdAt.toString(),
-                    updatedAt = post.updatedAt.toString()
+                    updatedAt = post.updatedAt.toString(),
+                    likeCount = post.likeCount,
                 )
             }
         }

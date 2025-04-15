@@ -15,7 +15,7 @@ data class PostEntity(
     val hashtags: List<String>? = emptyList(),
     val visibility: Visibility = Visibility.PUBLIC,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: LocalDateTime? = null,
 ) {
 
     companion object {
@@ -28,7 +28,7 @@ data class PostEntity(
                 hashtags = post.hashtags,
                 visibility = post.visibility,
                 createdAt = post.createdAt,
-                updatedAt = post.updatedAt
+                updatedAt = post.updatedAt ?: LocalDateTime.now()
             )
         }
     }

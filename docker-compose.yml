@@ -4,13 +4,16 @@ services:
     container_name: event_postgres
     ports:
       - "5432:5432"
+    shm_size: 1g
     environment:
       POSTGRES_DB: event_db
       POSTGRES_USER: event_user
       POSTGRES_PASSWORD: event_pass
     volumes:
-      - pgdata:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     restart: always
 
   redis:
@@ -18,8 +21,6 @@ services:
     container_name: event_redis
     ports:
       - "6379:6379"
-    volumes:
-      - redisdata:/data
     restart: always
 
   event-tracker:
@@ -37,6 +38,7 @@ services:
     image: user-service:latest
     container_name: user_service
     depends_on:
+      - event-tracker
       - postgres
       - redis
     ports:
@@ -69,83 +71,6 @@ services:
     command: >
       locust -f locustfile.py --host=http://host.docker.internal:8081 --web-port 8090
 
-  user-locust-master:
-    container_name: user_locust_master
-    build:
-      context: ./user-service/locust
-    ports:
-      - "8091:8091"
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8081 --master --web-port 8091
-    networks:
-      - locust-net
-
-  user-locust-worker1:
-    container_name: user_locust_worker1
-    build:
-      context: ./user-service/locust
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8081 --worker --master-host=user-locust-master
-    networks:
-      - locust-net
-
-  user-locust-worker2:
-    container_name: user_locust_worker2
-    build:
-      context: ./user-service/locust
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8081 --worker --master-host=user-locust-master
-    networks:
-      - locust-net
-
-  user-locust-worker3:
-    container_name: user_locust_worker3
-    build:
-      context: ./user-service/locust
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8081 --worker --master-host=user-locust-master
-    networks:
-      - locust-net
-
-  post-like-locust:
-    container_name: post_like_locust
-    build:
-      context: ./user-service/locust
-    ports:
-      - "8092:8092"
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f post_like.py --host=http://host.docker.internal:8081 --web-port 8092
-
-  search-locust:
-    container_name: search_locust
-    build:
-      context: ./user-service/locust
-    ports:
-      - "8095:8095"
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f search.py --host=http://host.docker.internal:8081 --web-port 8095
-
 networks:
-  locust-net:
-
-volumes:
-  pgdata:
-  redisdata:
+  default:
+    driver: bridge

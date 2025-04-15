@@ -1,5 +1,6 @@
 package com.jeffreyoh.userservice.storage.adapter.outbound.postgre
 
+import com.jeffreyoh.userservice.application.model.post.SearchKeywordSaveRedisByLikeResult
 import com.jeffreyoh.userservice.core.domain.post.Post
 import com.jeffreyoh.userservice.application.port.out.PostCommandPort
 import com.jeffreyoh.userservice.application.port.out.PostSearchPort
@@ -25,9 +26,8 @@ class PostAdapter(
     override fun searchByKeyword(
         keyword: String,
         limit: Int
-    ): Flux<Post> {
+    ): Flux<SearchKeywordSaveRedisByLikeResult> {
         return postCustomRepository.searchByKeyword(keyword, limit)
-            .map { postEntity -> postEntity.toDomain() }
             .switchIfEmpty(Flux.empty())
     }
 
