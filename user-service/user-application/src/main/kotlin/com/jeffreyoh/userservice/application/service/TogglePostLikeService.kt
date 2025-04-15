@@ -8,7 +8,6 @@ import com.jeffreyoh.userservice.application.port.out.EventTrackerPort
 import com.jeffreyoh.userservice.application.port.out.PostLikeCommandPort
 import com.jeffreyoh.userservice.core.domain.event.EventMetadata
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 import java.util.*
 
@@ -38,7 +37,7 @@ class TogglePostLikeService(
         return postLikeCommandPort.delete(command.userId, command.postId)
             .doOnSuccess {
                 sendLikeEvent(command, EventType.UNLIKE)
-                    .subscribeOn(Schedulers.parallel())
+                    .subscribeOn(Schedulers.boundedElastic())
                     .subscribe()
             }
             .then()
@@ -48,7 +47,7 @@ class TogglePostLikeService(
         return postLikeCommandPort.save(command.toPostLike())
             .doOnSuccess {
                 sendLikeEvent(command, EventType.LIKE)
-                    .subscribeOn(Schedulers.parallel())
+                    .subscribeOn(Schedulers.boundedElastic())
                     .subscribe()
             }
             .then()
