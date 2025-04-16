@@ -10,9 +10,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import reactor.util.retry.Retry
-import java.time.Duration
 import java.util.*
+import kotlin.random.Random
+
+private val log = KotlinLogging.logger {}
 
 class SearchService(
     private val eventTrackerPort: EventTrackerPort,
@@ -21,7 +22,6 @@ class SearchService(
     private val commandRedisPort: RedisCommandPort,
     private val distributedLockPort: DistributedLockPort
 ) : SearchUseCase {
-    private val logger = KotlinLogging.logger {}
 
     override fun searchByKeyword(
         userId: Long,
@@ -29,49 +29,72 @@ class SearchService(
     ): Flux<SearchKeywordSaveRedisByLikeResult> {
         val startTime = System.nanoTime()
 
-        // 이벤트 추적 비동기 처리
         saveRecentKeywordAndTrack(userId, keyword)
-            .subscribeOn(Schedulers.boundedElastic())
-            .subscribe()
+
+        val waitTimeSec = 5L + Random.nextLong(0, 500) / 1000L
 
         return redisReadPort.getCachedSearchResults(keyword)
             .switchIfEmpty(
-                distributedLockPort.withLockReactive(
+                distributedLockPort.withLock(
                     key = "search_lock:keyword:$keyword",
-                    waitTimeSec = 2,
-                    leaseTimeSec = 3
+                    waitTimeSec = waitTimeSec,
+                    leaseTimeSec = 5
                 ) {
-                    Mono.just(
-                        postSearchPort.searchByKeyword(keyword)
-                            .flatMap { post ->
-                                commandRedisPort.cacheSearchResults(keyword, post)
-                                    .thenReturn(post)
+                    log.debug { "🔒 락 블록 실행: keyword=$keyword" }
+                    val searchByKeyword = postSearchPort.searchByKeyword(keyword).cache()
+                    searchByKeyword
+                        .hasElements()
+                        .flatMap { hasElements ->
+                            if (hasElements) {
+                                log.debug { "🔍 DB 결과 캐싱: keyword=$keyword" }
+                                commandRedisPort.cacheSearchResults(keyword, searchByKeyword)
+                                    .then(Mono.just(searchByKeyword))
+                            } else {
+                                log.debug { "🔍 DB 결과 없음, 빈 캐시 저장: keyword=$keyword" }
+                                commandRedisPort.cacheEmptySearchResult(keyword)
+                                    .then(Mono.just(Flux.empty()))
                             }
-                    )
+                        }
                 }
-                    .flatMapMany { it }
-                    .onErrorResume { e ->
-                        logger.warn { "🚨 락 실패, DB 폴백: ${e.message}" }
-                        postSearchPort.searchByKeyword(keyword)
-                            .flatMap { post ->
-                                commandRedisPort.cacheSearchResults(keyword, post)
-                                    .thenReturn(post)
+                .flatMapMany { it }
+                .onErrorResume { e ->
+                    log.warn(e) { "🚨 락 실패, Redis 임시 캐시 폴백: keyword=$keyword, waitTimeSec=$waitTimeSec" }
+
+                    redisReadPort.getCachedSearchResults(keyword)
+                        .switchIfEmpty(
+                            Flux.defer {
+                                log.debug { "🔍 DB 폴백 시작: keyword=$keyword" }
+                                val searchByKeyword = postSearchPort.searchByKeyword(keyword).cache()
+                                searchByKeyword
+                                    .hasElements()
+                                    .flatMap { hasElements ->
+                                        if (hasElements) {
+                                            log.debug { "🔍 DB 결과 캐싱: keyword=$keyword" }
+                                            commandRedisPort.cacheSearchResults(keyword, searchByKeyword)
+                                                .thenReturn(searchByKeyword)
+                                        } else {
+                                            log.debug { "🔍 DB 결과 없음, 빈 캐시 저장: keyword=$keyword" }
+                                            commandRedisPort.cacheEmptySearchResult(keyword)
+                                                .thenReturn(Flux.empty())
+                                        }
+                                    }
+                                    .flatMapMany { it }
+                                    .onErrorResume { dbError ->
+                                        log.warn(dbError) { "🔍 DB 폴백 실패: ${dbError.message}, keyword=$keyword" }
+                                        Flux.empty()
+                                    }
                             }
-                            .onErrorResume { dbError ->
-                                logger.error { "❌ DB 조회 실패: ${dbError.message}" }
-                                Flux.empty()
-                            }
-                    }
+                        )
+                }
             )
-            .doOnNext { logger.info { "캐시 히트: keyword=$keyword" } }
-            .doOnError { e -> logger.error { "❌ 검색 처리 실패: ${e.message}" } }
+            .doOnError { e -> log.error(e) { "❌ 검색 처리 실패: ${e.message}, keyword=$keyword, userId=$userId" } }
             .doFinally {
                 val durationMs = (System.nanoTime() - startTime) / 1_000_000
-                logger.info { "🔍 검색 처리 시간: ${durationMs}ms for keyword=$keyword" }
+                log.info { "🔍 검색 처리 시간: ${durationMs}ms for keyword=$keyword, userId=$userId" }
             }
     }
 
-    private fun saveRecentKeywordAndTrack(userId: Long, keyword: String): Mono<Void> {
+    private fun saveRecentKeywordAndTrack(userId: Long, keyword: String) {
         val eventRequest = EventTrackerRequest.SaveEvent(
             eventType = EventType.SEARCH,
             userId = userId,
@@ -84,17 +107,24 @@ class SearchService(
             )
         )
 
-        return Mono.zip(
-            commandRedisPort.saveRecentKeyword(userId, keyword),
-            eventTrackerPort.sendEvent(eventRequest)
-        )
-            .doOnError { e -> logger.error { "❌ 이벤트/키워드 저장 실패: ${e.message}" } }
-            .retryWhen(Retry.backoff(3, Duration.ofMillis(100)))
-            .then()
+        commandRedisPort.saveRecentKeyword(userId, keyword)
+            .then(
+                eventTrackerPort.sendEvent(eventRequest)
+                    .doOnError { e ->
+                        log.error(e) { "⚠️ 이벤트 전송 실패: ${e.message}, userId=$userId, keyword=$keyword" }
+                    }
+                    .onErrorResume { Mono.empty() }
+            )
+            .doOnError { e ->
+                log.error(e) { "❌ Redis 저장 실패: ${e.message}, userId=$userId, keyword=$keyword" }
+            }
+            .onErrorResume { Mono.empty() }
             .subscribeOn(Schedulers.boundedElastic())
+            .subscribe()
     }
 
     override fun recentSearchByKeyword(userId: Long): Mono<List<String>> {
         return redisReadPort.recentSearchByKeyword(userId)
     }
+
 }

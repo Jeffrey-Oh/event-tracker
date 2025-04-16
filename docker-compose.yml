@@ -47,30 +47,6 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - EVENT_TRACKER_URL=http://event-tracker:8080
 
-  event-locust:
-    container_name: event_locust
-    build:
-      context: ./event-tracker/locust
-    ports:
-      - "8089:8089"
-    volumes:
-      - ./event-tracker/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8080
-
-  user-locust:
-    container_name: user_locust
-    build:
-      context: ./user-service/locust
-    ports:
-      - "8090:8090"
-    volumes:
-      - ./user-service/locust:/mnt/locust
-    working_dir: /mnt/locust
-    command: >
-      locust -f locustfile.py --host=http://host.docker.internal:8081 --web-port 8090
-
 networks:
   default:
     driver: bridge
